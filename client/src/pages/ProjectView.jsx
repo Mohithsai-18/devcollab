@@ -231,13 +231,20 @@ function ProjectView() {
                 ))}
 
                 {/* Add task button at bottom of column */}
-                <button
-                  className="btn btn-light btn-sm w-100 text-muted border-dashed mt-1"
-                  onClick={() => { setActiveColumn(col.id); setShowTaskModal(true); }}
-                  style={{ border: '1px dashed #ccc' }}
-                >
-                  + Add task
-                </button>
+                <div className="d-flex gap-2">
+  <button
+    className="btn btn-outline-light btn-sm"
+    onClick={() => navigate(`/analytics/${id}`)}
+  >
+    📊 Analytics
+  </button>
+  <button
+    className="btn btn-light btn-sm fw-semibold"
+    onClick={() => setShowTaskModal(true)}
+  >
+    + Add Task
+  </button>
+</div>
               </div>
             </div>
           ))}
