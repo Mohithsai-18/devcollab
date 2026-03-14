@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ProjectView from './pages/ProjectView';
 import Analytics from './pages/Analytics';
+import SprintPlanning from './pages/SprintPlanning';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -23,9 +24,13 @@ function App() {
         } />
         <Route path="/project/:id" element={
           <ProtectedRoute><ProjectView /></ProtectedRoute>
-        } /><Route path="/analytics/:id" element={
-  <ProtectedRoute><Analytics /></ProtectedRoute>
-} />
+        } />
+        <Route path="/analytics/:id" element={
+          <ProtectedRoute><Analytics /></ProtectedRoute>
+        } />
+        <Route path="/sprints/:id" element={
+          <ProtectedRoute><SprintPlanning /></ProtectedRoute>
+        } />
         <Route path="/" element={<Navigate to="/dashboard" />} />
       </Routes>
     </BrowserRouter>

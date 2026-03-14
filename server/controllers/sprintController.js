@@ -34,7 +34,7 @@ const getSprintsByProject = async (req, res) => {
        LEFT JOIN tasks t ON s.id = t.sprint_id
        WHERE s.project_id = ?
        GROUP BY s.id
-       ORDER BY s.created_at DESC`,
+       ORDER BY s.id DESC`,
       [req.params.projectId]
     );
     res.json(sprints);

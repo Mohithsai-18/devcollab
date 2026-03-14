@@ -146,12 +146,18 @@ function ProjectView() {
           </span>
         </div>
         <div className="d-flex gap-2">
-          <button
-            className="btn btn-outline-light btn-sm"
-            onClick={() => navigate(`/analytics/${id}`)}
-          >
-            📊 Analytics
-          </button>
+  <button
+    className="btn btn-outline-light btn-sm"
+    onClick={() => navigate(`/sprints/${id}`)}
+  >
+    🏃 Sprints
+  </button>
+  <button
+    className="btn btn-outline-light btn-sm"
+    onClick={() => navigate(`/analytics/${id}`)}
+  >
+    📊 Analytics
+  </button>
           <button
             className="btn btn-light btn-sm fw-semibold"
             onClick={() => setShowTaskModal(true)}
