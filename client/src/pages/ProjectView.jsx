@@ -148,6 +148,12 @@ function ProjectView() {
         <div className="d-flex gap-2">
   <button
     className="btn btn-outline-light btn-sm"
+    onClick={() => navigate(`/members/${id}`)}
+  >
+    👥 Members
+  </button>
+  <button
+    className="btn btn-outline-light btn-sm"
     onClick={() => navigate(`/sprints/${id}`)}
   >
     🏃 Sprints

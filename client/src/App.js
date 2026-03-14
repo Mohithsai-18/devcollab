@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import ProjectView from './pages/ProjectView';
 import Analytics from './pages/Analytics';
 import SprintPlanning from './pages/SprintPlanning';
+import Members from './pages/Members';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -32,6 +33,9 @@ function App() {
           <ProtectedRoute><SprintPlanning /></ProtectedRoute>
         } />
         <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="/members/:id" element={
+  <ProtectedRoute><Members /></ProtectedRoute>
+} />
       </Routes>
     </BrowserRouter>
   );
