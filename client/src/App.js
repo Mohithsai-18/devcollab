@@ -7,6 +7,7 @@ import ProjectView from './pages/ProjectView';
 import Analytics from './pages/Analytics';
 import SprintPlanning from './pages/SprintPlanning';
 import Members from './pages/Members';
+import Profile from './pages/Profile';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -29,6 +30,9 @@ function App() {
         <Route path="/analytics/:id" element={
           <ProtectedRoute><Analytics /></ProtectedRoute>
         } />
+        <Route path="/profile" element={
+  <ProtectedRoute><Profile /></ProtectedRoute>
+} />
         <Route path="/sprints/:id" element={
           <ProtectedRoute><SprintPlanning /></ProtectedRoute>
         } />

@@ -57,8 +57,13 @@ function Dashboard() {
       <nav className="navbar navbar-dark bg-primary px-4">
         <span className="navbar-brand fw-bold fs-4">DevCollab</span>
         <div className="d-flex align-items-center gap-3">
-  <span className="text-white">Welcome, {user?.name}</span>
-  <span className="badge bg-light text-primary">{user?.role}</span>
+  <button
+  className="btn btn-link text-white text-decoration-none p-0 fw-semibold"
+  onClick={() => navigate('/profile')}
+>
+  Welcome, {user?.name}
+</button>
+<span className="badge bg-light text-primary">{user?.role}</span>
   <NotificationBell />
   <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
     Logout

@@ -7,12 +7,12 @@ const generateTokens = (userId) => {
   const accessToken = jwt.sign(
     { id: userId },
     process.env.JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: '1Y' }
   );
   const refreshToken = jwt.sign(
     { id: userId },
     process.env.JWT_REFRESH_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: '1Y '}
   );
   return { accessToken, refreshToken };
 };
@@ -114,5 +114,42 @@ const getMe = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+// UPDATE PROFILE
+const updateProfile = async (req, res) => {
+  try {
+    const { name, currentPassword, newPassword } = req.body;
+    const [users] = await pool.query(
+      'SELECT * FROM users WHERE id = ?', [req.userId]
+    );
+    const user = users[0];
 
-module.exports = { register, login, getMe };
+    // If changing password
+    if (currentPassword && newPassword) {
+      const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Current password is incorrect' });
+      }
+      const newHash = await bcrypt.hash(newPassword, 12);
+      await pool.query(
+        'UPDATE users SET name=?, password_hash=? WHERE id=?',
+        [name, newHash, req.userId]
+      );
+    } else {
+      await pool.query(
+        'UPDATE users SET name=? WHERE id=?',
+        [name, req.userId]
+      );
+    }
+
+    const [updated] = await pool.query(
+      'SELECT id, name, email, role, created_at FROM users WHERE id=?',
+      [req.userId]
+    );
+    res.json({ message: 'Profile updated', user: updated[0] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = { register, login, getMe, updateProfile };
