@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useSocket } from '../context/SocketContext';
 import CodeReview from '../components/CodeReview/CodeReview';
+import NotificationBell from '../components/Notifications/NotificationBell';
 
 const COLUMNS = [
   { id: 'backlog', label: 'Backlog', color: '#6c757d' },
@@ -34,6 +35,10 @@ function ProjectView() {
   });
   const [creating, setCreating] = useState(false);
   const [draggedTask, setDraggedTask] = useState(null);
+  const [searchText, setSearchText] = useState('');
+  const [filterPriority, setFilterPriority] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterAssignee, setFilterAssignee] = useState('all');
 
   useEffect(() => {
     fetchProject();
@@ -98,9 +103,7 @@ function ProjectView() {
     }
   };
 
-  const handleDragStart = (task) => {
-    setDraggedTask(task);
-  };
+  const handleDragStart = (task) => setDraggedTask(task);
 
   const handleDrop = async (newStatus) => {
     if (!draggedTask || draggedTask.status === newStatus) return;
@@ -122,8 +125,21 @@ function ProjectView() {
     setDraggedTask(null);
   };
 
+  const getFilteredTasks = () => {
+    return tasks.filter(task => {
+      const matchSearch = searchText === '' ||
+        task.title.toLowerCase().includes(searchText.toLowerCase()) ||
+        (task.description && task.description.toLowerCase().includes(searchText.toLowerCase()));
+      const matchPriority = filterPriority === 'all' || task.priority === filterPriority;
+      const matchStatus = filterStatus === 'all' || task.status === filterStatus;
+      const matchAssignee = filterAssignee === 'all' ||
+        (filterAssignee === 'unassigned' ? !task.assigned_to : task.assigned_to_name === filterAssignee);
+      return matchSearch && matchPriority && matchStatus && matchAssignee;
+    });
+  };
+
   const getTasksByStatus = (status) =>
-    tasks.filter(t => t.status === status);
+    getFilteredTasks().filter(t => t.status === status);
 
   if (loading) return (
     <div className="d-flex justify-content-center mt-5">
@@ -145,25 +161,26 @@ function ProjectView() {
             {project?.status}
           </span>
         </div>
-        <div className="d-flex gap-2">
-  <button
-    className="btn btn-outline-light btn-sm"
-    onClick={() => navigate(`/members/${id}`)}
-  >
-    👥 Members
-  </button>
-  <button
-    className="btn btn-outline-light btn-sm"
-    onClick={() => navigate(`/sprints/${id}`)}
-  >
-    🏃 Sprints
-  </button>
-  <button
-    className="btn btn-outline-light btn-sm"
-    onClick={() => navigate(`/analytics/${id}`)}
-  >
-    📊 Analytics
-  </button>
+        <div className="d-flex gap-2 align-items-center">
+          <NotificationBell />
+          <button
+            className="btn btn-outline-light btn-sm"
+            onClick={() => navigate(`/members/${id}`)}
+          >
+            👥 Members
+          </button>
+          <button
+            className="btn btn-outline-light btn-sm"
+            onClick={() => navigate(`/sprints/${id}`)}
+          >
+            🏃 Sprints
+          </button>
+          <button
+            className="btn btn-outline-light btn-sm"
+            onClick={() => navigate(`/analytics/${id}`)}
+          >
+            📊 Analytics
+          </button>
           <button
             className="btn btn-light btn-sm fw-semibold"
             onClick={() => setShowTaskModal(true)}
@@ -189,6 +206,98 @@ function ProjectView() {
           </div>
         </div>
 
+        {/* Search and Filter Bar */}
+        {activeTab === 'kanban' && (
+          <div className="card border-0 shadow-sm mb-3 p-3">
+            <div className="row g-2 align-items-center">
+              <div className="col-md-4">
+                <div className="input-group">
+                  <span className="input-group-text bg-white border-end-0">🔍</span>
+                  <input
+                    type="text"
+                    className="form-control border-start-0"
+                    placeholder="Search tasks..."
+                    value={searchText}
+                    onChange={e => setSearchText(e.target.value)}
+                  />
+                  {searchText && (
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={() => setSearchText('')}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="col-md-2">
+                <select
+                  className="form-select"
+                  value={filterPriority}
+                  onChange={e => setFilterPriority(e.target.value)}
+                >
+                  <option value="all">All Priorities</option>
+                  <option value="p1">🔴 Critical</option>
+                  <option value="p2">🟡 High</option>
+                  <option value="p3">🔵 Medium</option>
+                  <option value="p4">⚪ Low</option>
+                </select>
+              </div>
+              <div className="col-md-2">
+                <select
+                  className="form-select"
+                  value={filterStatus}
+                  onChange={e => setFilterStatus(e.target.value)}
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="backlog">Backlog</option>
+                  <option value="todo">To Do</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="in_review">In Review</option>
+                  <option value="done">Done</option>
+                </select>
+              </div>
+              <div className="col-md-2">
+                <select
+                  className="form-select"
+                  value={filterAssignee}
+                  onChange={e => setFilterAssignee(e.target.value)}
+                >
+                  <option value="all">All Members</option>
+                  <option value="unassigned">Unassigned</option>
+                  {project?.members?.map(m => (
+                    <option key={m.id} value={m.name}>{m.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-md-2">
+                <button
+                  className="btn btn-outline-secondary w-100"
+                  onClick={() => {
+                    setSearchText('');
+                    setFilterPriority('all');
+                    setFilterStatus('all');
+                    setFilterAssignee('all');
+                  }}
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+            {(searchText || filterPriority !== 'all' || filterStatus !== 'all' || filterAssignee !== 'all') && (
+              <div className="mt-2">
+                <small className="text-muted">
+                  Showing <strong>{getFilteredTasks().length}</strong> of <strong>{tasks.length}</strong> tasks
+                  {searchText && <span className="badge bg-primary ms-1">"{searchText}"</span>}
+                  {filterPriority !== 'all' && <span className="badge bg-warning text-dark ms-1">{filterPriority}</span>}
+                  {filterStatus !== 'all' && <span className="badge bg-info ms-1">{filterStatus}</span>}
+                  {filterAssignee !== 'all' && <span className="badge bg-success ms-1">{filterAssignee}</span>}
+                </small>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Tabs */}
         <ul className="nav nav-tabs mb-3">
           <li className="nav-item">
@@ -212,11 +321,11 @@ function ProjectView() {
         {/* Code Review Tab */}
         {activeTab === 'codereview' && (
           <CodeReview
-  taskId={tasks[0]?.id || null}
-  socket={socket}
-  projectId={id}
-  projectTasks={tasks}
-/>
+            taskId={tasks[0]?.id || null}
+            socket={socket}
+            projectId={id}
+            projectTasks={tasks}
+          />
         )}
 
         {/* Kanban Board Tab */}
@@ -229,8 +338,9 @@ function ProjectView() {
                 style={{ width: '280px' }}
                 onDragOver={e => e.preventDefault()}
                 onDrop={() => handleDrop(col.id)}
+              
               >
-                {/* Column Header */}
+              
                 <div
                   className="rounded-top p-2 d-flex justify-content-between align-items-center"
                   style={{ backgroundColor: col.color }}
@@ -240,9 +350,9 @@ function ProjectView() {
                     {getTasksByStatus(col.id).length}
                   </span>
                 </div>
-
-                {/* Column Body */}
+            
                 <div
+            
                   className="bg-white rounded-bottom p-2 border border-top-0"
                   style={{ minHeight: '400px' }}
                 >
@@ -282,8 +392,7 @@ function ProjectView() {
                       </div>
                     </div>
                   ))}
-
-                  {/* Add task button at bottom of column */}
+                 
                   <button
                     className="btn btn-light btn-sm w-100 text-muted mt-1"
                     onClick={() => { setActiveColumn(col.id); setShowTaskModal(true); }}

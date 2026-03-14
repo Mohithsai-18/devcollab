@@ -14,7 +14,7 @@ function Profile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
+  
   const handleUpdateInfo = async (e) => {
     e.preventDefault();
     setError(''); setSuccess('');
