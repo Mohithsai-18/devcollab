@@ -3,6 +3,7 @@ import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import ProjectView from './pages/ProjectView';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -18,6 +19,9 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={
           <ProtectedRoute><Dashboard /></ProtectedRoute>
+        } />
+        <Route path="/project/:id" element={
+          <ProtectedRoute><ProjectView /></ProtectedRoute>
         } />
         <Route path="/" element={<Navigate to="/dashboard" />} />
       </Routes>
