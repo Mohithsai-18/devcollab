@@ -1,3 +1,4 @@
+import NotificationBell from '../components/Notifications/NotificationBell';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -56,12 +57,13 @@ function Dashboard() {
       <nav className="navbar navbar-dark bg-primary px-4">
         <span className="navbar-brand fw-bold fs-4">DevCollab</span>
         <div className="d-flex align-items-center gap-3">
-          <span className="text-white">Welcome, {user?.name}</span>
-          <span className="badge bg-light text-primary">{user?.role}</span>
-          <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
+  <span className="text-white">Welcome, {user?.name}</span>
+  <span className="badge bg-light text-primary">{user?.role}</span>
+  <NotificationBell />
+  <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
+    Logout
+  </button>
+</div>
       </nav>
 
       <div className="container mt-4">

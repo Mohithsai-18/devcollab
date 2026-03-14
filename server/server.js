@@ -20,7 +20,6 @@ app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Test route
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/projects', require('./routes/projects'));
@@ -28,8 +27,9 @@ app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/sprints', require('./routes/sprints'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/notifications', require('./routes/notifications'));
-app.use('/api/code-review', require('./routes/codeReview'));
 app.use('/api/codereview', require('./routes/codeReview'));
+
+// Health check
 app.get('/', (req, res) => {
   res.json({ message: 'DevCollab API is running!' });
 });
