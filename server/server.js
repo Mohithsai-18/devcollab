@@ -29,6 +29,8 @@ app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/codereview', require('./routes/codeReview'));
 app.use('/api/comments', require('./routes/comments'));
+app.use('/api/attachments', require('./routes/attachments'));
+app.use('/uploads', express.static('uploads'));
 
 // Health check
 app.get('/', (req, res) => {

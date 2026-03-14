@@ -5,6 +5,7 @@ import { useSocket } from '../context/SocketContext';
 import CodeReview from '../components/CodeReview/CodeReview';
 import NotificationBell from '../components/Notifications/NotificationBell';
 import TaskComments from '../components/Common/TaskComments';
+import TaskAttachments from '../components/Common/TaskAttachments';
 
 const COLUMNS = [
   { id: 'backlog', label: 'Backlog', color: '#6c757d' },
@@ -151,8 +152,7 @@ function ProjectView() {
 
   return (
     <div className="min-vh-100 bg-light">
-
-      {/* Navbar */}
+   
       <nav className="navbar navbar-dark bg-primary px-4">
         <div className="d-flex align-items-center gap-3">
           <button className="btn btn-outline-light btn-sm" onClick={() => navigate('/dashboard')}>
@@ -165,34 +165,22 @@ function ProjectView() {
         </div>
         <div className="d-flex gap-2 align-items-center">
           <NotificationBell />
-          <button
-            className="btn btn-outline-light btn-sm"
-            onClick={() => navigate(`/members/${id}`)}
-          >
+          <button className="btn btn-outline-light btn-sm" onClick={() => navigate(`/members/${id}`)}>
             👥 Members
           </button>
-          <button
-            className="btn btn-outline-light btn-sm"
-            onClick={() => navigate(`/sprints/${id}`)}
-          >
+          <button className="btn btn-outline-light btn-sm" onClick={() => navigate(`/sprints/${id}`)}>
             🏃 Sprints
           </button>
-          <button
-            className="btn btn-outline-light btn-sm"
-            onClick={() => navigate(`/analytics/${id}`)}
-          >
+          <button className="btn btn-outline-light btn-sm" onClick={() => navigate(`/analytics/${id}`)}>
             📊 Analytics
           </button>
-          <button
-            className="btn btn-light btn-sm fw-semibold"
-            onClick={() => setShowTaskModal(true)}
-          >
+          <button className="btn btn-light btn-sm fw-semibold" onClick={() => setShowTaskModal(true)}>
             + Add Task
           </button>
         </div>
       </nav>
 
-      {/* Project Info */}
+     
       <div className="container-fluid px-4 mt-3">
         <div className="row mb-3">
           <div className="col">
@@ -208,7 +196,7 @@ function ProjectView() {
           </div>
         </div>
 
-        {/* Search and Filter Bar */}
+      
         {activeTab === 'kanban' && (
           <div className="card border-0 shadow-sm mb-3 p-3">
             <div className="row g-2 align-items-center">
@@ -223,21 +211,12 @@ function ProjectView() {
                     onChange={e => setSearchText(e.target.value)}
                   />
                   {searchText && (
-                    <button
-                      className="btn btn-outline-secondary"
-                      onClick={() => setSearchText('')}
-                    >
-                      ✕
-                    </button>
+                    <button className="btn btn-outline-secondary" onClick={() => setSearchText('')}>✕</button>
                   )}
                 </div>
               </div>
               <div className="col-md-2">
-                <select
-                  className="form-select"
-                  value={filterPriority}
-                  onChange={e => setFilterPriority(e.target.value)}
-                >
+                <select className="form-select" value={filterPriority} onChange={e => setFilterPriority(e.target.value)}>
                   <option value="all">All Priorities</option>
                   <option value="p1">🔴 Critical</option>
                   <option value="p2">🟡 High</option>
@@ -246,11 +225,7 @@ function ProjectView() {
                 </select>
               </div>
               <div className="col-md-2">
-                <select
-                  className="form-select"
-                  value={filterStatus}
-                  onChange={e => setFilterStatus(e.target.value)}
-                >
+                <select className="form-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
                   <option value="all">All Statuses</option>
                   <option value="backlog">Backlog</option>
                   <option value="todo">To Do</option>
@@ -260,11 +235,7 @@ function ProjectView() {
                 </select>
               </div>
               <div className="col-md-2">
-                <select
-                  className="form-select"
-                  value={filterAssignee}
-                  onChange={e => setFilterAssignee(e.target.value)}
-                >
+                <select className="form-select" value={filterAssignee} onChange={e => setFilterAssignee(e.target.value)}>
                   <option value="all">All Members</option>
                   <option value="unassigned">Unassigned</option>
                   {project?.members?.map(m => (
@@ -275,12 +246,7 @@ function ProjectView() {
               <div className="col-md-2">
                 <button
                   className="btn btn-outline-secondary w-100"
-                  onClick={() => {
-                    setSearchText('');
-                    setFilterPriority('all');
-                    setFilterStatus('all');
-                    setFilterAssignee('all');
-                  }}
+                  onClick={() => { setSearchText(''); setFilterPriority('all'); setFilterStatus('all'); setFilterAssignee('all'); }}
                 >
                   Reset
                 </button>
@@ -290,47 +256,33 @@ function ProjectView() {
               <div className="mt-2">
                 <small className="text-muted">
                   Showing <strong>{getFilteredTasks().length}</strong> of <strong>{tasks.length}</strong> tasks
-                  {searchText && <span className="badge bg-primary ms-1">"{searchText}"</span>}
-                  {filterPriority !== 'all' && <span className="badge bg-warning text-dark ms-1">{filterPriority}</span>}
-                  {filterStatus !== 'all' && <span className="badge bg-info ms-1">{filterStatus}</span>}
-                  {filterAssignee !== 'all' && <span className="badge bg-success ms-1">{filterAssignee}</span>}
+                
                 </small>
               </div>
             )}
           </div>
         )}
 
-        {/* Tabs */}
+        
         <ul className="nav nav-tabs mb-3">
           <li className="nav-item">
-            <button
-              className={`nav-link ${activeTab === 'kanban' ? 'active' : ''}`}
-              onClick={() => setActiveTab('kanban')}
-            >
+            <button className={`nav-link ${activeTab === 'kanban' ? 'active' : ''}`} onClick={() => setActiveTab('kanban')}>
               📋 Kanban Board
             </button>
           </li>
           <li className="nav-item">
-            <button
-              className={`nav-link ${activeTab === 'codereview' ? 'active' : ''}`}
-              onClick={() => setActiveTab('codereview')}
-            >
+            <button className={`nav-link ${activeTab === 'codereview' ? 'active' : ''}`} onClick={() => setActiveTab('codereview')}>
               🔍 Code Review
             </button>
           </li>
         </ul>
 
-        {/* Code Review Tab */}
+       
         {activeTab === 'codereview' && (
-          <CodeReview
-            taskId={tasks[0]?.id || null}
-            socket={socket}
-            projectId={id}
-            projectTasks={tasks}
-          />
+          <CodeReview taskId={tasks[0]?.id || null} socket={socket} projectId={id} projectTasks={tasks} />
         )}
 
-        {/* Kanban Board Tab */}
+       
         {activeTab === 'kanban' && (
           <div className="d-flex gap-3 overflow-auto pb-4" style={{ minHeight: '70vh' }}>
             {COLUMNS.map(col => (
@@ -340,23 +292,15 @@ function ProjectView() {
                 style={{ width: '280px' }}
                 onDragOver={e => e.preventDefault()}
                 onDrop={() => handleDrop(col.id)}
-              
-              >  
+              >
                 <div
                   className="rounded-top p-2 d-flex justify-content-between align-items-center"
                   style={{ backgroundColor: col.color }}
                 >
                   <span className="text-white fw-semibold">{col.label}</span>
-                  <span className="badge bg-white text-dark">
-                    {getTasksByStatus(col.id).length}
-                  </span>
+                  <span className="badge bg-white text-dark">{getTasksByStatus(col.id).length}</span>
                 </div>
-                
-                <div
-                
-                className="bg-white rounded-bottom p-2 border border-top-0"
-                  style={{ minHeight: '400px' }}
-                >
+                <div className="bg-white rounded-bottom p-2 border border-top-0" style={{ minHeight: '400px' }}>
                   {getTasksByStatus(col.id).map(task => (
                     <div
                       key={task.id}
@@ -368,15 +312,13 @@ function ProjectView() {
                       <div className="card-body p-2">
                         <div className="d-flex justify-content-between align-items-start mb-1">
                           <p className="mb-0 fw-semibold small">{task.title}</p>
-                          <span className={`badge bg-${PRIORITY_COLORS[task.priority]} ms-1`}
-                            style={{ fontSize: '10px' }}>
+                          <span className={`badge bg-${PRIORITY_COLORS[task.priority]} ms-1`} style={{ fontSize: '10px' }}>
                             {PRIORITY_LABELS[task.priority]}
                           </span>
                         </div>
                         {task.description && (
                           <p className="text-muted mb-1" style={{ fontSize: '11px' }}>
-                            {task.description.substring(0, 60)}
-                            {task.description.length > 60 ? '...' : ''}
+                            {task.description.substring(0, 60)}{task.description.length > 60 ? '...' : ''}
                           </p>
                         )}
                         <div className="d-flex justify-content-between align-items-center mt-1">
@@ -384,29 +326,41 @@ function ProjectView() {
                             {task.assigned_to_name ? `👤 ${task.assigned_to_name}` : '👤 Unassigned'}
                           </span>
                           {task.story_points > 0 && (
-                            <span className="badge bg-light text-dark border"
-                              style={{ fontSize: '10px' }}>
+                            <span className="badge bg-light text-dark border" style={{ fontSize: '10px' }}>
                               {task.story_points} pts
                             </span>
                           )}
                         </div>
-
-                        {/* Comments toggle */}
-                        <button
-                          className="btn btn-link btn-sm p-0 mt-1 text-muted"
-                          style={{ fontSize: '11px' }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setExpandedTask(expandedTask === task.id ? null : task.id);
-                          }}
-                        >
-                          💬 {expandedTask === task.id ? 'Hide comments' : 'Comments'}
-                        </button>
-
-                        {/* Comments section */}
+                        <div className="d-flex gap-2 mt-1">
+                          <button
+                            className="btn btn-link btn-sm p-0 text-muted"
+                            style={{ fontSize: '11px' }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedTask(expandedTask === task.id ? null : task.id);
+                            }}
+                          >
+                            💬 Comments
+                          </button>
+                          <button
+                            className="btn btn-link btn-sm p-0 text-muted"
+                            style={{ fontSize: '11px' }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedTask(expandedTask === `attach_${task.id}` ? null : `attach_${task.id}`);
+                            }}
+                          >
+                            📎 Files
+                          </button>
+                        </div>
                         {expandedTask === task.id && (
                           <div onClick={e => e.stopPropagation()}>
                             <TaskComments taskId={task.id} />
+                          </div>
+                        )}
+                        {expandedTask === `attach_${task.id}` && (
+                          <div onClick={e => e.stopPropagation()}>
+                            <TaskAttachments taskId={task.id} />
                           </div>
                         )}
                       </div>
@@ -427,15 +381,13 @@ function ProjectView() {
         )}
       </div>
 
-      {/* Create Task Modal */}
+
       {showTaskModal && (
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title fw-bold">Add Task to {
-                  COLUMNS.find(c => c.id === activeColumn)?.label
-                }</h5>
+                <h5 className="modal-title fw-bold">Add Task to {COLUMNS.find(c => c.id === activeColumn)?.label}</h5>
                 <button className="btn-close" onClick={() => setShowTaskModal(false)} />
               </div>
               <form onSubmit={handleCreateTask}>
@@ -489,8 +441,7 @@ function ProjectView() {
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary"
-                    onClick={() => setShowTaskModal(false)}>
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowTaskModal(false)}>
                     Cancel
                   </button>
                   <button type="submit" className="btn btn-primary" disabled={creating}>
