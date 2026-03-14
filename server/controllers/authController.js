@@ -1,6 +1,7 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { sendWelcomeEmail } = require('../utils/emailService');
 
 // Generate tokens
 const generateTokens = (userId) => {
@@ -39,8 +40,11 @@ const register = async (req, res) => {
       [name, email, password_hash, role || 'developer']
     );
 
-    const { accessToken, refreshToken } = generateTokens(result.insertId);
+    // Send welcome email
+    await sendWelcomeEmail(email, name);
 
+    const { accessToken, refreshToken } = generateTokens(result.insertId);
+    sendWelcomeEmail(email, name);
     res.status(201).json({
       message: 'User registered successfully',
       accessToken,
