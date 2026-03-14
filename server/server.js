@@ -28,6 +28,7 @@ app.use('/api/sprints', require('./routes/sprints'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/codereview', require('./routes/codeReview'));
+app.use('/api/comments', require('./routes/comments'));
 
 // Health check
 app.get('/', (req, res) => {

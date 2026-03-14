@@ -4,6 +4,7 @@ import api from '../utils/api';
 import { useSocket } from '../context/SocketContext';
 import CodeReview from '../components/CodeReview/CodeReview';
 import NotificationBell from '../components/Notifications/NotificationBell';
+import TaskComments from '../components/Common/TaskComments';
 
 const COLUMNS = [
   { id: 'backlog', label: 'Backlog', color: '#6c757d' },
@@ -39,6 +40,7 @@ function ProjectView() {
   const [filterPriority, setFilterPriority] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterAssignee, setFilterAssignee] = useState('all');
+  const [expandedTask, setExpandedTask] = useState(null);
 
   useEffect(() => {
     fetchProject();
@@ -339,8 +341,7 @@ function ProjectView() {
                 onDragOver={e => e.preventDefault()}
                 onDrop={() => handleDrop(col.id)}
               
-              >
-              
+              >  
                 <div
                   className="rounded-top p-2 d-flex justify-content-between align-items-center"
                   style={{ backgroundColor: col.color }}
@@ -350,10 +351,10 @@ function ProjectView() {
                     {getTasksByStatus(col.id).length}
                   </span>
                 </div>
-            
+                
                 <div
-            
-                  className="bg-white rounded-bottom p-2 border border-top-0"
+                
+                className="bg-white rounded-bottom p-2 border border-top-0"
                   style={{ minHeight: '400px' }}
                 >
                   {getTasksByStatus(col.id).map(task => (
@@ -389,10 +390,29 @@ function ProjectView() {
                             </span>
                           )}
                         </div>
+
+                        {/* Comments toggle */}
+                        <button
+                          className="btn btn-link btn-sm p-0 mt-1 text-muted"
+                          style={{ fontSize: '11px' }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedTask(expandedTask === task.id ? null : task.id);
+                          }}
+                        >
+                          💬 {expandedTask === task.id ? 'Hide comments' : 'Comments'}
+                        </button>
+
+                        {/* Comments section */}
+                        {expandedTask === task.id && (
+                          <div onClick={e => e.stopPropagation()}>
+                            <TaskComments taskId={task.id} />
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
-                 
+                  
                   <button
                     className="btn btn-light btn-sm w-100 text-muted mt-1"
                     onClick={() => { setActiveColumn(col.id); setShowTaskModal(true); }}

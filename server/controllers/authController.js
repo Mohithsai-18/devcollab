@@ -7,12 +7,12 @@ const generateTokens = (userId) => {
   const accessToken = jwt.sign(
     { id: userId },
     process.env.JWT_SECRET,
-    { expiresIn: '1Y' }
+    { expiresIn: '400d' }
   );
   const refreshToken = jwt.sign(
     { id: userId },
     process.env.JWT_REFRESH_SECRET,
-    { expiresIn: '1Y '}
+    { expiresIn: '400d' }
   );
   return { accessToken, refreshToken };
 };
