@@ -28,6 +28,8 @@ app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/sprints', require('./routes/sprints'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/code-review', require('./routes/codeReview'));
+app.use('/api/codereview', require('./routes/codeReview'));
 app.get('/', (req, res) => {
   res.json({ message: 'DevCollab API is running!' });
 });

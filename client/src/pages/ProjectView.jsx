@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useSocket } from '../context/SocketContext';
+import CodeReview from '../components/CodeReview/CodeReview';
 
 const COLUMNS = [
   { id: 'backlog', label: 'Backlog', color: '#6c757d' },
@@ -27,6 +28,7 @@ function ProjectView() {
   const [loading, setLoading] = useState(true);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [activeColumn, setActiveColumn] = useState('backlog');
+  const [activeTab, setActiveTab] = useState('kanban');
   const [taskForm, setTaskForm] = useState({
     title: '', description: '', priority: 'p3', story_points: 0
   });
@@ -143,12 +145,20 @@ function ProjectView() {
             {project?.status}
           </span>
         </div>
-        <button
-          className="btn btn-light btn-sm fw-semibold"
-          onClick={() => setShowTaskModal(true)}
-        >
-          + Add Task
-        </button>
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-outline-light btn-sm"
+            onClick={() => navigate(`/analytics/${id}`)}
+          >
+            📊 Analytics
+          </button>
+          <button
+            className="btn btn-light btn-sm fw-semibold"
+            onClick={() => setShowTaskModal(true)}
+          >
+            + Add Task
+          </button>
+        </div>
       </nav>
 
       {/* Project Info */}
@@ -167,88 +177,113 @@ function ProjectView() {
           </div>
         </div>
 
-        {/* Kanban Board */}
-        <div className="d-flex gap-3 overflow-auto pb-4" style={{ minHeight: '70vh' }}>
-          {COLUMNS.map(col => (
-            <div
-              key={col.id}
-              className="flex-shrink-0"
-              style={{ width: '280px' }}
-              onDragOver={e => e.preventDefault()}
-              onDrop={() => handleDrop(col.id)}
+        {/* Tabs */}
+        <ul className="nav nav-tabs mb-3">
+          <li className="nav-item">
+            <button
+              className={`nav-link ${activeTab === 'kanban' ? 'active' : ''}`}
+              onClick={() => setActiveTab('kanban')}
             >
-              {/* Column Header */}
-              <div
-                className="rounded-top p-2 d-flex justify-content-between align-items-center"
-                style={{ backgroundColor: col.color }}
-              >
-                <span className="text-white fw-semibold">{col.label}</span>
-                <span className="badge bg-white text-dark">
-                  {getTasksByStatus(col.id).length}
-                </span>
-              </div>
+              📋 Kanban Board
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link ${activeTab === 'codereview' ? 'active' : ''}`}
+              onClick={() => setActiveTab('codereview')}
+            >
+              🔍 Code Review
+            </button>
+          </li>
+        </ul>
 
-              {/* Column Body */}
+        {/* Code Review Tab */}
+        {activeTab === 'codereview' && (
+          <CodeReview
+  taskId={tasks[0]?.id || null}
+  socket={socket}
+  projectId={id}
+  projectTasks={tasks}
+/>
+        )}
+
+        {/* Kanban Board Tab */}
+        {activeTab === 'kanban' && (
+          <div className="d-flex gap-3 overflow-auto pb-4" style={{ minHeight: '70vh' }}>
+            {COLUMNS.map(col => (
               <div
-                className="bg-white rounded-bottom p-2 border border-top-0"
-                style={{ minHeight: '400px' }}
+                key={col.id}
+                className="flex-shrink-0"
+                style={{ width: '280px' }}
+                onDragOver={e => e.preventDefault()}
+                onDrop={() => handleDrop(col.id)}
               >
-                {getTasksByStatus(col.id).map(task => (
-                  <div
-                    key={task.id}
-                    className="card mb-2 shadow-sm border-0"
-                    draggable
-                    onDragStart={() => handleDragStart(task)}
-                    style={{ cursor: 'grab' }}
-                  >
-                    <div className="card-body p-2">
-                      <div className="d-flex justify-content-between align-items-start mb-1">
-                        <p className="mb-0 fw-semibold small">{task.title}</p>
-                        <span className={`badge bg-${PRIORITY_COLORS[task.priority]} ms-1`}
-                          style={{ fontSize: '10px' }}>
-                          {PRIORITY_LABELS[task.priority]}
-                        </span>
-                      </div>
-                      {task.description && (
-                        <p className="text-muted mb-1" style={{ fontSize: '11px' }}>
-                          {task.description.substring(0, 60)}
-                          {task.description.length > 60 ? '...' : ''}
-                        </p>
-                      )}
-                      <div className="d-flex justify-content-between align-items-center mt-1">
-                        <span className="text-muted" style={{ fontSize: '11px' }}>
-                          {task.assigned_to_name ? `👤 ${task.assigned_to_name}` : '👤 Unassigned'}
-                        </span>
-                        {task.story_points > 0 && (
-                          <span className="badge bg-light text-dark border"
+                {/* Column Header */}
+                <div
+                  className="rounded-top p-2 d-flex justify-content-between align-items-center"
+                  style={{ backgroundColor: col.color }}
+                >
+                  <span className="text-white fw-semibold">{col.label}</span>
+                  <span className="badge bg-white text-dark">
+                    {getTasksByStatus(col.id).length}
+                  </span>
+                </div>
+
+                {/* Column Body */}
+                <div
+                  className="bg-white rounded-bottom p-2 border border-top-0"
+                  style={{ minHeight: '400px' }}
+                >
+                  {getTasksByStatus(col.id).map(task => (
+                    <div
+                      key={task.id}
+                      className="card mb-2 shadow-sm border-0"
+                      draggable
+                      onDragStart={() => handleDragStart(task)}
+                      style={{ cursor: 'grab' }}
+                    >
+                      <div className="card-body p-2">
+                        <div className="d-flex justify-content-between align-items-start mb-1">
+                          <p className="mb-0 fw-semibold small">{task.title}</p>
+                          <span className={`badge bg-${PRIORITY_COLORS[task.priority]} ms-1`}
                             style={{ fontSize: '10px' }}>
-                            {task.story_points} pts
+                            {PRIORITY_LABELS[task.priority]}
                           </span>
+                        </div>
+                        {task.description && (
+                          <p className="text-muted mb-1" style={{ fontSize: '11px' }}>
+                            {task.description.substring(0, 60)}
+                            {task.description.length > 60 ? '...' : ''}
+                          </p>
                         )}
+                        <div className="d-flex justify-content-between align-items-center mt-1">
+                          <span className="text-muted" style={{ fontSize: '11px' }}>
+                            {task.assigned_to_name ? `👤 ${task.assigned_to_name}` : '👤 Unassigned'}
+                          </span>
+                          {task.story_points > 0 && (
+                            <span className="badge bg-light text-dark border"
+                              style={{ fontSize: '10px' }}>
+                              {task.story_points} pts
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
 
-                {/* Add task button at bottom of column */}
-                <div className="d-flex gap-2">
-  <button
-    className="btn btn-outline-light btn-sm"
-    onClick={() => navigate(`/analytics/${id}`)}
-  >
-    📊 Analytics
-  </button>
-  <button
-    className="btn btn-light btn-sm fw-semibold"
-    onClick={() => setShowTaskModal(true)}
-  >
-    + Add Task
-  </button>
-</div>
+                  {/* Add task button at bottom of column */}
+                  <button
+                    className="btn btn-light btn-sm w-100 text-muted mt-1"
+                    onClick={() => { setActiveColumn(col.id); setShowTaskModal(true); }}
+                    style={{ border: '1px dashed #ccc' }}
+                  >
+                    + Add task
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Create Task Modal */}
