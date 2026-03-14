@@ -1,70 +1,105 @@
-# Getting Started with Create React App
+# DevCollab — Real-Time Project Management Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack collaborative project management and code review platform built with React, Node.js, MySQL, and Socket.io.
 
-## Available Scripts
+## 🚀 Features
 
-In the project directory, you can run:
+- **Authentication** — JWT-based login/register with role-based access (Admin, Lead, Developer, Reviewer)
+- **Project Management** — Create projects, add team members, track deadlines
+- **Real-Time Kanban Board** — Drag and drop tasks across columns with live updates via Socket.io
+- **Task Management** — Create tasks with priority levels, story points, and assignments
+- **Sprint Planning** — Create sprints, assign tasks, track velocity
+- **Analytics Dashboard** — Pie charts, bar charts, burndown charts, velocity tracking
+- **Notifications** — Real-time activity notifications
 
-### `npm start`
+## 🛠️ Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React.js, Bootstrap 5, Recharts |
+| Backend | Node.js, Express.js |
+| Database | MySQL |
+| Real-time | Socket.io |
+| Auth | JWT + bcrypt |
+| File Upload | Multer |
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 📁 Project Structure
+```
+devcollab/
+├── client/          # React frontend (port 3000)
+│   └── src/
+│       ├── components/
+│       ├── context/     # Auth + Socket context
+│       ├── pages/       # Login, Register, Dashboard, ProjectView, Analytics
+│       └── utils/       # Axios config
+└── server/          # Node.js backend (port 5000)
+    ├── config/      # MySQL connection
+    ├── controllers/ # Auth, Projects, Tasks, Sprints, Analytics
+    ├── middleware/  # JWT auth, Role check
+    ├── routes/      # API routes
+    └── socket/      # Socket.io events
+```
 
-### `npm test`
+## ⚙️ Setup Instructions
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites
+- Node.js v18+
+- MySQL 8.0
+- Git
 
-### `npm run build`
+### Backend Setup
+```bash
+cd server
+npm install
+# Create .env file with your DB credentials
+npm run dev
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Frontend Setup
+```bash
+cd client
+npm install
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Database Setup
+```bash
+mysql -u root -p
+source server/models/schema.sql
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🔗 API Endpoints
 
-### `npm run eject`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/auth/register | Register user |
+| POST | /api/auth/login | Login user |
+| GET | /api/projects | Get all projects |
+| POST | /api/projects | Create project |
+| GET | /api/tasks/project/:id | Get project tasks |
+| POST | /api/tasks | Create task |
+| PATCH | /api/tasks/:id/status | Update task status |
+| GET | /api/analytics/project/:id | Get analytics |
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 👥 Team
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Built as a B.Tech final year project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 📄 License
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+MIT
+```
 
-## Learn More
+Save **Ctrl + S**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Now final push:
+```
+git add .
+```
+```
+git commit -m "docs: complete README with setup instructions and API docs"
+```
+```
+git push origin master
