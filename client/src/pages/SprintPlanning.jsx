@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 import api from '../utils/api';
+
+const PRIORITY_LABELS = { p1: 'Critical', p2: 'High', p3: 'Medium', p4: 'Low' };
+const PRIORITY_COLORS = { p1: 'danger', p2: 'warning', p3: 'info', p4: 'secondary' };
 
 function SprintPlanning() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [project, setProject] = useState(null);
   const [sprints, setSprints] = useState([]);
   const [backlogTasks, setBacklogTasks] = useState([]);
@@ -14,6 +19,11 @@ function SprintPlanning() {
   const [sprintForm, setSprintForm] = useState({
     name: '', start_date: '', end_date: '', capacity_points: 40
   });
+  const [aiEstimating, setAiEstimating] = useState(false);
+  const [aiEstimates, setAiEstimates] = useState([]);
+  const [showEstimateModal, setShowEstimateModal] = useState(false);
+  const [applyingEstimates, setApplyingEstimates] = useState(false);
+  const [selectedEstimates, setSelectedEstimates] = useState({});
 
   useEffect(() => {
     fetchAll();
@@ -130,11 +140,12 @@ function SprintPlanning() {
   });
 
   return (
-    <div className="min-vh-100 bg-light">
+    <div className="min-vh-100 bg-body">
 
       {/* Navbar */}
       <nav className="navbar navbar-dark bg-primary px-4">
         <div className="d-flex align-items-center gap-3">
+
           <button
             className="btn btn-outline-light btn-sm"
             onClick={() => navigate(`/project/${id}`)}
@@ -159,9 +170,34 @@ function SprintPlanning() {
           {/* Left — Backlog */}
           <div className="col-md-4">
             <div className="card border-0 shadow-sm">
-              <div className="card-header bg-secondary text-white d-flex justify-content-between">
+              <div className="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
                 <span className="fw-bold">📋 Backlog</span>
-                <span className="badge bg-white text-dark">{backlogTasks.filter(t => !t.sprint_id).length}</span>
+                <div className="d-flex gap-2 align-items-center">
+                  <button
+                    className="btn btn-warning btn-sm py-0 px-2 fw-semibold"
+                    style={{ fontSize: '11px' }}
+                    disabled={aiEstimating}
+                    onClick={async () => {
+                      setAiEstimating(true);
+                      try {
+                        const res = await api.post('/ai/estimate', { project_id: id });
+                        if (res.data.estimates && res.data.estimates.length) {
+                          setAiEstimates(res.data.estimates);
+                          const sel = {};
+                          res.data.estimates.forEach(function(e) { sel[e.task_id] = true; });
+                          setSelectedEstimates(sel);
+                          setShowEstimateModal(true);
+                        } else {
+                          alert(res.data.message || 'No tasks to estimate');
+                        }
+                      } catch (err) { alert('AI estimation failed'); }
+                      finally { setAiEstimating(false); }
+                    }}
+                  >
+                    {aiEstimating ? '⏳...' : '✨ AI Estimate'}
+                  </button>
+                  <span className="badge bg-white text-dark">{backlogTasks.filter(t => !t.sprint_id).length}</span>
+                </div>
               </div>
               <div className="card-body p-2" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                 {backlogTasks.filter(t => !t.sprint_id).length === 0 ? (
@@ -398,6 +434,72 @@ function SprintPlanning() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Estimate Modal */}
+      {showEstimateModal && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content border-0 shadow" style={{ background: '#161b22', color: '#e6edf3' }}>
+              <div className="modal-header border-0" style={{ borderBottom: '1px solid #30363d' }}>
+                <h5 className="modal-title fw-bold" style={{ color: '#e6edf3' }}>✨ AI Story Point Estimates</h5>
+                <button className="btn-close btn-close-white" onClick={() => setShowEstimateModal(false)} />
+              </div>
+              <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                <p style={{ color: '#8b949e', fontSize: 13, marginBottom: 16 }}>Review AI suggestions. Check the ones you want to apply.</p>
+                {aiEstimates.map((e, i) => (
+                  <div key={i} style={{ background: '#0d1117', border: '1px solid ' + (selectedEstimates[e.task_id] ? '#238636' : '#30363d'), borderRadius: 8, padding: '12px 16px', marginBottom: 8, cursor: 'pointer' }}
+                    onClick={() => setSelectedEstimates(prev => ({ ...prev, [e.task_id]: !prev[e.task_id] }))}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <input type="checkbox" checked={!!selectedEstimates[e.task_id]} readOnly style={{ accentColor: '#238636' }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: '#e6edf3' }}>{e.title}</div>
+                        <div style={{ fontSize: 12, color: '#8b949e', marginTop: 2 }}>{e.reasoning}</div>
+                      </div>
+                      <div style={{ background: '#238636', color: '#fff', borderRadius: 20, padding: '4px 14px', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
+                        {e.points} pts
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="modal-footer border-0" style={{ borderTop: '1px solid #30363d' }}>
+                <span style={{ color: '#8b949e', fontSize: 12, marginRight: 'auto' }}>
+                  {Object.values(selectedEstimates).filter(Boolean).length} of {aiEstimates.length} selected
+                </span>
+                <button onClick={() => setShowEstimateModal(false)} style={{ background: '#21262d', border: '1px solid #30363d', color: '#e6edf3', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 13 }}>Cancel</button>
+                <button
+                  disabled={applyingEstimates || Object.values(selectedEstimates).filter(Boolean).length === 0}
+                  onClick={async () => {
+                    setApplyingEstimates(true);
+                    try {
+                      for (const e of aiEstimates) {
+                        if (selectedEstimates[e.task_id]) {
+                          const task = backlogTasks.find(t => t.id === e.task_id) || {};
+                          await api.put('/tasks/' + e.task_id, {
+                            title: task.title || e.title,
+                            description: task.description,
+                            priority: task.priority,
+                            status: task.status,
+                            story_points: e.points,
+                            sprint_id: task.sprint_id || null,
+                          });
+                        }
+                      }
+                      setShowEstimateModal(false);
+                      fetchAll();
+                    } catch (err) { alert('Failed to apply some estimates'); }
+                    finally { setApplyingEstimates(false); }
+                  }}
+                  style={{ background: applyingEstimates ? '#21262d' : '#238636', border: '1px solid ' + (applyingEstimates ? '#30363d' : '#2ea043'), color: applyingEstimates ? '#484f58' : '#fff', borderRadius: 6, padding: '6px 16px', cursor: applyingEstimates ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 500 }}
+                >
+                  {applyingEstimates ? 'Applying...' : 'Apply ' + Object.values(selectedEstimates).filter(Boolean).length + ' Estimates'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

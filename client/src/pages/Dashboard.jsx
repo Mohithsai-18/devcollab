@@ -1,13 +1,18 @@
-import NotificationBell from '../components/Notifications/NotificationBell';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { useSocket } from '../context/SocketContext';
 import api from '../utils/api';
+import NotificationBell from '../components/Notifications/NotificationBell';
 
 function Dashboard() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { socket } = useSocket();
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '', deadline: '' });
@@ -15,7 +20,39 @@ function Dashboard() {
 
   useEffect(() => {
     fetchProjects();
+    fetchActivities();
   }, []);
+
+  const fetchActivities = async () => {
+    try {
+      const res = await api.get('/activities');
+      setActivities(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (socket && projects.length > 0) {
+      projects.forEach(p => socket.emit('join_project', p.id));
+
+      const handleUpdate = () => {
+        fetchActivities();
+        fetchProjects();
+      };
+
+      socket.on('new_task', handleUpdate);
+      socket.on('task_updated', handleUpdate);
+      socket.on('task_assignment', handleUpdate);
+
+      return () => {
+        projects.forEach(p => socket.emit('leave_project', p.id));
+        socket.off('new_task', handleUpdate);
+        socket.off('task_updated', handleUpdate);
+        socket.off('task_assignment', handleUpdate);
+      };
+    }
+  }, [socket, projects]);
 
   const fetchProjects = async () => {
     try {
@@ -51,24 +88,27 @@ function Dashboard() {
   const totalTasks = projects.reduce((sum, p) => sum + (p.task_count || 0), 0);
 
   return (
-    <div className="min-vh-100 bg-light">
+    <div className="min-vh-100 bg-body">
 
       {/* Navbar */}
       <nav className="navbar navbar-dark bg-primary px-4">
         <span className="navbar-brand fw-bold fs-4">DevCollab</span>
         <div className="d-flex align-items-center gap-3">
-  <button
-  className="btn btn-link text-white text-decoration-none p-0 fw-semibold"
-  onClick={() => navigate('/profile')}
->
-  Welcome, {user?.name}
-</button>
-<span className="badge bg-light text-primary">{user?.role}</span>
-  <NotificationBell />
-  <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
-    Logout
-  </button>
-</div>
+          <button
+            className="btn btn-link text-white text-decoration-none p-0 fw-semibold"
+            onClick={() => navigate('/profile')}
+          >
+            Welcome, {user?.name}
+          </button>
+          <span className="badge bg-light text-primary">{user?.role}</span>
+          <button className="theme-toggle" onClick={toggleTheme} title="Toggle Dark Mode">
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
+          <NotificationBell />
+          <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
       </nav>
 
       <div className="container mt-4">
@@ -108,12 +148,14 @@ function Dashboard() {
         {/* Projects Header */}
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h4 className="fw-bold mb-0">My Projects</h4>
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowModal(true)}
-          >
-            + New Project
-          </button>
+          <div className="d-flex gap-2">
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowModal(true)}
+            >
+              + New Project
+            </button>
+          </div>
         </div>
 
         {/* Projects Grid */}
@@ -124,14 +166,22 @@ function Dashboard() {
         ) : projects.length === 0 ? (
           <div className="text-center mt-5">
             <h5 className="text-muted">No projects yet</h5>
-            <p className="text-muted">Click "New Project" to create your first one</p>
+            <p className="text-muted">Create a new project</p>
+            <div className="d-flex gap-3 justify-content-center mt-3">
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowModal(true)}
+              >
+                + New Project
+              </button>
+            </div>
           </div>
         ) : (
           <div className="row">
             {projects.map(project => (
               <div className="col-md-4 mb-4" key={project.id}>
                 <div
-                  className="card h-100 shadow-sm border-0 project-card"
+                  className="card h-100 shadow-sm border-0"
                   style={{ cursor: 'pointer' }}
                   onClick={() => navigate(`/project/${project.id}`)}
                 >
@@ -160,7 +210,42 @@ function Dashboard() {
               </div>
             ))}
           </div>
+
         )}
+
+        {/* Activity Feed */}
+        <div className="mt-5 mb-5">
+          <h5 className="fw-bold mb-3">📢 Recent Activity</h5>
+          <div className="card border-0 shadow-sm">
+            <div className="card-body p-0">
+              {activities.length === 0 ? (
+                <div className="text-center py-4 text-muted">No recent activity</div>
+              ) : (
+                <div className="list-group list-group-flush rounded custom-list-group">
+                  {activities.map(act => (
+                    <div key={act.id} className="list-group-item p-3 d-flex align-items-start gap-3" style={{ background: 'transparent' }}>
+                      <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 32, height: 32, fontSize: 14 }}>
+                        {act.user_name?.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-grow-1">
+                        <div className="mb-1">
+                          <span className="fw-semibold">{act.user_name}</span>{' '}
+                          <span className="text-muted">{act.action}</span>{' '}
+                          <span className="fw-semibold">"{act.details}"</span>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="badge bg-secondary opacity-75">{act.project_name}</span>
+                          <small className="text-muted">{new Date(act.created_at).toLocaleString()}</small>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* Create Project Modal */}
@@ -170,10 +255,7 @@ function Dashboard() {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title fw-bold">Create New Project</h5>
-                <button
-                  className="btn-close"
-                  onClick={() => setShowModal(false)}
-                />
+                <button className="btn-close" onClick={() => setShowModal(false)} />
               </div>
               <form onSubmit={handleCreate}>
                 <div className="modal-body">

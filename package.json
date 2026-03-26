@@ -1,7 +1,8 @@
 {
-  "dependencies": {
-    "nodemailer": "^8.0.2",
-    "react-syntax-highlighter": "^16.1.1",
-    "recharts": "^3.8.0"
+  "name": "devcollab",
+  "private": true,
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm start"
   }
 }

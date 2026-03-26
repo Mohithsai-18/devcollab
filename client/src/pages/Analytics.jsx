@@ -5,6 +5,7 @@ import {
   XAxis, YAxis, Tooltip, Legend,
   LineChart, Line, CartesianGrid, ResponsiveContainer
 } from 'recharts';
+import { useTheme } from '../context/ThemeContext';
 import api from '../utils/api';
 
 const STATUS_COLORS = {
@@ -29,6 +30,7 @@ const PRIORITY_LABELS = {
 function Analytics() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [data, setData] = useState(null);
   const [velocity, setVelocity] = useState([]);
   const [project, setProject] = useState(null);
@@ -86,11 +88,12 @@ function Analytics() {
     : 0;
 
   return (
-    <div className="min-vh-100 bg-light">
+    <div className="min-vh-100 bg-body">
 
       {/* Navbar */}
       <nav className="navbar navbar-dark bg-primary px-4">
         <div className="d-flex align-items-center gap-3">
+
           <button
             className="btn btn-outline-light btn-sm"
             onClick={() => navigate(`/project/${id}`)}

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 import api from '../utils/api';
 
 function Members() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [project, setProject] = useState(null);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,11 +77,12 @@ function Members() {
   );
 
   return (
-    <div className="min-vh-100 bg-light">
+    <div className="min-vh-100 bg-body">
 
       {/* Navbar */}
       <nav className="navbar navbar-dark bg-primary px-4">
         <div className="d-flex align-items-center gap-3">
+
           <button
             className="btn btn-outline-light btn-sm"
             onClick={() => navigate(`/project/${id}`)}

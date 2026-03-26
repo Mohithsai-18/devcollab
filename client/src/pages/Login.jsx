@@ -79,6 +79,13 @@ function Login() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+        <hr />
+<button
+  className="btn btn-dark w-100 py-2 mb-3"
+  onClick={() => window.location.href = 'http://localhost:5000/api/auth/github'}
+>
+  🐙 Continue with GitHub
+</button>
 
         <p className="text-center mt-3 mb-0">
           Don't have an account?{' '}

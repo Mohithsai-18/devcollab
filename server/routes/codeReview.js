@@ -6,7 +6,8 @@ const {
   getSnippetsByTask,
   addComment,
   getComments,
-  resolveComment
+  resolveComment,
+  syncLocal
 } = require('../controllers/codeReviewController');
 
 router.post('/snippets', auth, createSnippet);
@@ -14,5 +15,6 @@ router.get('/snippets/task/:taskId', auth, getSnippetsByTask);
 router.post('/comments', auth, addComment);
 router.get('/comments/:snippetId', auth, getComments);
 router.patch('/comments/:id/resolve', auth, resolveComment);
+router.post('/sync-local', auth, syncLocal);
 
 module.exports = router;

@@ -103,10 +103,49 @@ const resolveComment = async (req, res) => {
   }
 };
 
+// SYNC LOCAL CHANGES
+const syncLocal = async (req, res) => {
+  try {
+    const { project_id, file_path, code_content, language, task_id_override } = req.body;
+
+    let taskId = task_id_override;
+    
+    if (!taskId) {
+      let [tasks] = await pool.query('SELECT id FROM tasks WHERE project_id = ? AND title = ?', [project_id, 'Live VS Code Sync']);
+      
+      if (tasks.length === 0) {
+        const [result] = await pool.query(
+          "INSERT INTO tasks (project_id, title, description, priority, status) VALUES (?, ?, ?, 'p3', 'in_progress')",
+          [project_id, 'Live VS Code Sync', 'Automatically created to store live-synced files from VS Code']
+        );
+        taskId = result.insertId;
+      } else {
+        taskId = tasks[0].id;
+      }
+    }
+
+    const [snippetResult] = await pool.query(
+      `INSERT INTO code_snippets (task_id, language, code_content, created_by)
+       VALUES (?, ?, ?, ?)`,
+      [taskId, language || 'javascript', code_content, req.userId]
+    );
+
+    res.status(201).json({
+      message: 'Local file synced',
+      snippetId: snippetResult.insertId,
+      taskId
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   createSnippet,
   getSnippetsByTask,
   addComment,
   getComments,
-  resolveComment
+  resolveComment,
+  syncLocal
 };

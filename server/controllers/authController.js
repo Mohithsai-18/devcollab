@@ -44,7 +44,6 @@ const register = async (req, res) => {
     await sendWelcomeEmail(email, name);
 
     const { accessToken, refreshToken } = generateTokens(result.insertId);
-    sendWelcomeEmail(email, name);
     res.status(201).json({
       message: 'User registered successfully',
       accessToken,

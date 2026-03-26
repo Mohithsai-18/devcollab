@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import api from '../utils/api';
 
 function Profile() {
   const { user, login } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('info');
   const [name, setName] = useState(user?.name || '');
@@ -54,10 +56,11 @@ function Profile() {
   };
 
   return (
-    <div className="min-vh-100 bg-light">
+    <div className="min-vh-100 bg-body">
       {/* Navbar */}
       <nav className="navbar navbar-dark bg-primary px-4">
         <div className="d-flex align-items-center gap-3">
+
           <button className="btn btn-outline-light btn-sm" onClick={() => navigate('/dashboard')}>
             ← Back
           </button>
