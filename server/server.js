@@ -3,7 +3,12 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const morgan = require('morgan');
-require('dotenv').config();
+const dotenv = require('dotenv');
+
+// Load environment-specific configuration
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+dotenv.config({ path: envFile });
+
 const session = require('express-session');
 const passport = require('passport');
 
