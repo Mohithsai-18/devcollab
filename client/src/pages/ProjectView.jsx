@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useSocket } from '../context/SocketContext';
@@ -108,8 +108,8 @@ function GitHubLinkModal({ task, projectId, onClose, onLinked }) {
             <button className="btn-close btn-close-white" onClick={onClose} />
           </div>
 
-          <div className="modal-body" style={{ background: '#161b22' }}>
-            {error && <div className="mb-3 p-2" style={{ background: '#1a0a0a', border: '1px solid #f85149', color: '#f85149', borderRadius: 6, fontSize: 13 }}>{error}</div>}
+          <div className="modal-body" style={{ background: '#020617' }}>
+            {error && <div className="mb-3 p-2" style={{ background: 'rgba(248,81,73,0.1)', border: '1px solid #f85149', color: '#f85149', borderRadius: 6, fontSize: 13 }}>{error}</div>}
             {noRepo ? (
               <div className="text-center py-4">
                 <div style={{ fontSize: 40, marginBottom: 12 }}>🔗</div>
@@ -238,14 +238,14 @@ function GitHubBadge({ task, onUpdated }) {
   if (!task.github_branch && !task.github_commit_sha) return null;
 
   return (
-    <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid #f0f0f0' }}>
+    <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid var(--border-glass)' }}>
       {task.github_branch && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3 }}>
           <svg height="11" viewBox="0 0 16 16" fill="#3fb950">
             <path d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 019 8.5H7.5a1 1 0 000 2h2a.75.75 0 010 1.5h-2a2.5 2.5 0 010-5H9a1 1 0 000-2H6.823A2.251 2.251 0 114.25 3.25v.006a.75.75 0 001.5 0v-.006A.75.75 0 016.5 3a.75.75 0 10-1.5 0 2.25 2.25 0 002.25 2.25H9a2.5 2.5 0 012.5 2.5v.872a2.25 2.25 0 11-1.5 0V7.75A1 1 0 009 6.75H7.5A2.5 2.5 0 015 4.25V4.13A2.251 2.251 0 114.25 2a2.25 2.25 0 012.25 2.25v.117z"/>
           </svg>
           <code style={{ fontSize: 10, color: '#3fb950', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block' }}>{task.github_branch}</code>
-          <button onClick={handleSync} disabled={syncing} style={{ marginLeft: 'auto', background: 'none', border: '1px solid #ccc', borderRadius: 4, padding: '1px 5px', fontSize: 10, cursor: 'pointer', color: '#6c757d' }}>
+          <button onClick={handleSync} disabled={syncing} style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', borderRadius: 4, padding: '1px 5px', fontSize: 10, cursor: 'pointer', color: 'var(--text-muted)' }}>
             {syncing ? '⟳' : '↻ Sync'}
           </button>
         </div>
@@ -291,10 +291,21 @@ function ProjectView() {
   const [breakdownSelected, setBreakdownSelected] = useState({});
   const [breakdownCreating, setBreakdownCreating] = useState(false);
 
+  const fetchProject = useCallback(async () => {
+    try { const res = await api.get(`/projects/${id}`); setProject(res.data); }
+    catch (err) { console.error(err); }
+  }, [id]);
+
+  const fetchTasks = useCallback(async () => {
+    try { const res = await api.get(`/tasks/project/${id}`); setTasks(res.data); }
+    catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  }, [id]);
+
   useEffect(() => {
     fetchProject();
     fetchTasks();
-  }, [id]); // eslint-disable-line
+  }, [id, fetchProject, fetchTasks]);
 
   useEffect(() => {
     if (!socket) return;
@@ -309,17 +320,6 @@ function ProjectView() {
       socket.off('new_task');
     };
   }, [socket, id]);
-
-  const fetchProject = async () => {
-    try { const res = await api.get(`/projects/${id}`); setProject(res.data); }
-    catch (err) { console.error(err); }
-  };
-
-  const fetchTasks = async () => {
-    try { const res = await api.get(`/tasks/project/${id}`); setTasks(res.data); }
-    catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  };
 
   const handleCreateTask = async (e) => {
     e.preventDefault();
@@ -366,45 +366,41 @@ function ProjectView() {
   );
 
   return (
-    <div className="min-vh-100 bg-body">
+    <div className="dark-page-bg" style={{ paddingBottom: '40px' }}>
 
       {/* ── Navbar ── */}
-      <nav className="navbar navbar-dark bg-primary px-3 py-0" style={{ minHeight: 56, position: 'relative', zIndex: 1050 }}>
-        <div className="d-flex align-items-center gap-2">
-          <button className="btn btn-outline-light btn-sm" onClick={() => navigate('/dashboard')}>← Back</button>
-          <span className="navbar-brand fw-bold mb-0 fs-6">{project?.name}</span>
-          <span className={`badge ${project?.status === 'active' ? 'bg-success' : 'bg-secondary'}`}>{project?.status}</span>
+      <nav className="d-flex justify-content-between align-items-center px-4" style={{ height: '72px', borderBottom: '1px solid var(--border-glass)', background: 'rgba(6,9,19,0.8)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 1050 }}>
+        <div className="d-flex align-items-center gap-3">
+          <button className="btn-premium-outline py-1 px-3 mt-0" style={{ fontSize: '0.875rem' }} onClick={() => navigate('/dashboard')}>← Back</button>
+          <span className="fw-bold fs-5 text-white m-0">{project?.name}</span>
+          <span className="badge" style={{ background: project?.status === 'active' ? 'rgba(16,185,129,0.2)' : 'rgba(100,116,139,0.2)', color: project?.status === 'active' ? '#34d399' : '#94a3b8', border: `1px solid ${project?.status === 'active' ? 'rgba(16,185,129,0.3)' : 'rgba(100,116,139,0.3)'}` }}>{project?.status}</span>
         </div>
 
         <div className="d-flex align-items-center gap-2 flex-wrap justify-content-end">
           <NotificationBell />
-          <button className="btn btn-outline-light btn-sm" onClick={() => navigate(`/members/${id}`)}>👥 Members</button>
-          <button className="btn btn-outline-light btn-sm" onClick={() => navigate(`/github/${id}`)}>🐙 GitHub</button>
-          <button className="btn btn-outline-light btn-sm" onClick={() => navigate(`/sprints/${id}`)}>🏃 Sprints</button>
-          <button className="btn btn-outline-light btn-sm" onClick={() => navigate(`/analytics/${id}`)}>📊 Analytics</button>
-          <button className="btn btn-outline-light btn-sm" onClick={() => navigate(`/handoff/${id}`)}>🤖 Handoffs</button>
+          <button className="btn-premium-outline py-1 px-3 mt-0" style={{ fontSize: '0.875rem', border: 'none' }} onClick={() => navigate(`/members/${id}`)}>👥 Members</button>
+          <button className="btn-premium-outline py-1 px-3 mt-0" style={{ fontSize: '0.875rem', border: 'none' }} onClick={() => navigate(`/github/${id}`)}>🐙 GitHub</button>
+          <button className="btn-premium-outline py-1 px-3 mt-0" style={{ fontSize: '0.875rem', border: 'none' }} onClick={() => navigate(`/sprints/${id}`)}>🏃 Sprints</button>
+          <button className="btn-premium-outline py-1 px-3 mt-0" style={{ fontSize: '0.875rem', border: 'none' }} onClick={() => navigate(`/analytics/${id}`)}>📊 Analytics</button>
+          <button className="btn-premium-outline py-1 px-3 mt-0" style={{ fontSize: '0.875rem', border: 'none' }} onClick={() => navigate(`/handoff/${id}`)}>🤖 Handoffs</button>
 
          {/* ── AI Tools dropdown ── */}
 <div className="position-relative">
   <button
-    className="btn btn-warning btn-sm fw-semibold"
+    className="btn-premium py-1 px-3 mt-0 fw-semibold" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
     onClick={() => setAiDropdown(prev => !prev)}
   >
     ✨ AI Tools ▾
   </button>
   {aiDropdown && (
     <>
-      {/* Invisible overlay to close dropdown when clicking outside */}
       <div
         style={{ position: 'fixed', inset: 0, zIndex: 9998 }}
         onClick={() => setAiDropdown(false)}
       />
-      <div style={{
-        position: 'absolute', right: 0, top: '110%', zIndex: 9999,
-        background: '#161b22', border: '1px solid #30363d',
-        borderRadius: 10, minWidth: 220,
-        boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-        overflow: 'hidden',
+      <div className="glass-panel" style={{
+        position: 'absolute', right: 0, top: '120%', zIndex: 9999,
+        minWidth: 260, padding: 0
       }}>
         {[
           { icon: '💬', label: 'AI Project Chat',  sub: 'Ask about your codebase',    path: `/ai-chat/${id}` },
@@ -415,21 +411,21 @@ function ProjectView() {
           <div
             key={i}
             role="button"
-            onMouseDown={() => { if (item.action) item.action(); else { setAiDropdown(false); navigate(item.path); } }}
+            onClick={() => { if (item.action) item.action(); else { setAiDropdown(false); navigate(item.path); } }}
             style={{
               width: '100%', background: 'transparent',
-              borderBottom: i < 3 ? '1px solid #21262d' : 'none',
-              color: '#e6edf3', padding: '12px 16px', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left',
+              borderBottom: i < 3 ? '1px solid var(--border-glass)' : 'none',
+              color: 'var(--text-main)', padding: '14px 16px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
               transition: 'background 0.2s',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = '#1c2128'}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            <div style={{ fontSize: 18, flexShrink: 0, width: 24, textAlign: 'center' }}>{item.icon}</div>
+            <div style={{ fontSize: 20, flexShrink: 0, width: 28, textAlign: 'center' }}>{item.icon}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 500, fontSize: 13, color: '#e6edf3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</div>
-              <div style={{ fontSize: 11, color: '#8b949e', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.sub}</div>
+              <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#f8fafc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</div>
+              <div style={{ fontSize: '0.75rem', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.sub}</div>
             </div>
           </div>
         ))}
@@ -437,34 +433,34 @@ function ProjectView() {
     </>
   )}
 </div>
-          <button className="btn btn-light btn-sm fw-semibold" onClick={() => setShowTaskModal(true)}>+ Add Task</button>
+          <button className="btn-premium py-1 px-3 mt-0 ms-2 fw-semibold" onClick={() => setShowTaskModal(true)}>+ Add Task</button>
         </div>
       </nav>
 
       <div className="container-fluid px-4 mt-3">
 
         {/* Project meta */}
-        <div className="row mb-3">
+        <div className="row mb-4">
           <div className="col">
-            <p className="text-muted mb-1">{project?.description}</p>
-            <div className="d-flex gap-3 text-muted small flex-wrap">
-              <span>👥 {project?.members?.length} members</span>
-              <span>📋 {tasks.length} tasks</span>
-              <span>✅ {tasks.filter(t => t.status === 'done').length} done</span>
-              <span style={{ color: '#3fb950' }}>🔗 {tasks.filter(t => t.github_branch).length} linked to GitHub</span>
-              {project?.deadline && <span>📅 Due: {new Date(project.deadline).toLocaleDateString()}</span>}
+            <p className="mb-2" style={{ color: 'var(--text-muted)' }}>{project?.description}</p>
+            <div className="d-flex gap-4 flex-wrap" style={{ color: 'var(--text-muted)' }}>
+              <span><strong className="text-white">👥 {project?.members?.length}</strong> members</span>
+              <span><strong className="text-white">📋 {tasks.length}</strong> tasks</span>
+              <span><strong className="text-white" style={{ color: '#34d399' }}>✅ {tasks.filter(t => t.status === 'done').length}</strong> done</span>
+              <span style={{ color: '#34d399' }}><strong>🔗 {tasks.filter(t => t.github_branch).length}</strong> linked to GitHub</span>
+              {project?.deadline && <span>📅 Due: <strong className="text-white">{new Date(project.deadline).toLocaleDateString()}</strong></span>}
             </div>
           </div>
         </div>
 
         {/* Filters */}
         {activeTab === 'kanban' && (
-          <div className="card border-0 shadow-sm mb-3 p-3">
-            <div className="row g-2 align-items-center">
+          <div className="glass-panel mb-4 p-4 text-start">
+            <div className="row g-3 align-items-center">
               <div className="col-md-4">
                 <div className="input-group">
-                  <span className="input-group-text bg-white border-end-0">🔍</span>
-                  <input type="text" className="form-control border-start-0" placeholder="Search tasks..."
+                  <span className="input-group-text border-end-0" style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid var(--border-glass)' }}>🔍</span>
+                  <input type="text" className="form-control border-start-0 ps-0" placeholder="Search tasks..."
                     value={searchText} onChange={e => setSearchText(e.target.value)} />
                   {searchText && <button className="btn btn-outline-secondary" onClick={() => setSearchText('')}>✕</button>}
                 </div>
@@ -496,93 +492,99 @@ function ProjectView() {
                 </select>
               </div>
               <div className="col-md-2">
-                <button className="btn btn-outline-secondary w-100"
+                <button className="btn-premium-outline w-100 py-2 mt-0"
                   onClick={() => { setSearchText(''); setFilterPriority('all'); setFilterStatus('all'); setFilterAssignee('all'); }}>
                   Reset Filters
                 </button>
               </div>
             </div>
             {(searchText || filterPriority !== 'all' || filterStatus !== 'all' || filterAssignee !== 'all') && (
-              <div className="mt-2">
-                <small className="text-muted">Showing <strong>{getFilteredTasks().length}</strong> of <strong>{tasks.length}</strong> tasks</small>
+              <div className="mt-3">
+                <small style={{ color: 'var(--text-muted)' }}>Showing <strong className="text-white">{getFilteredTasks().length}</strong> of <strong className="text-white">{tasks.length}</strong> tasks</small>
               </div>
             )}
           </div>
         )}
 
         {/* Tabs */}
-        <ul className="nav nav-tabs mb-3">
-          <li className="nav-item">
-            <button className={`nav-link ${activeTab === 'kanban' ? 'active' : ''}`} onClick={() => setActiveTab('kanban')}>📋 Kanban Board</button>
-          </li>
-          <li className="nav-item">
-            <button className={`nav-link ${activeTab === 'codereview' ? 'active' : ''}`} onClick={() => setActiveTab('codereview')}>🔍 Code Review</button>
-          </li>
-          <li className="nav-item">
-            <button className={`nav-link ${activeTab === 'githubcode' ? 'active' : ''}`} onClick={() => setActiveTab('githubcode')}>🐙 GitHub Code</button>
-          </li>
-        </ul>
+        <div className="d-flex gap-4 mb-4" style={{ borderBottom: '1px solid var(--border-glass)' }}>
+          {[
+            { id: 'kanban', label: '📋 Kanban Board' },
+            { id: 'codereview', label: '🔍 Code Review' },
+            { id: 'githubcode', label: '🐙 GitHub Code' },
+          ].map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              style={{ background: 'none', border: 'none', borderBottom: activeTab === tab.id ? '2px solid var(--accent-blue)' : '2px solid transparent', color: activeTab === tab.id ? 'var(--text-main)' : 'var(--text-muted)', padding: '10px 16px', fontWeight: activeTab === tab.id ? 600 : 500, fontSize: '1rem', transition: 'all 0.2s' }}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
         {activeTab === 'codereview' && <CodeReview taskId={tasks[0]?.id || null} socket={socket} projectId={id} projectTasks={tasks} />}
         {activeTab === 'githubcode' && <GitHubCodeReview projectId={id} socket={socket} />}
 
         {/* Kanban */}
         {activeTab === 'kanban' && (
-          <div className="d-flex gap-3 overflow-auto pb-4" style={{ minHeight: '70vh' }}>
-            {COLUMNS.map(col => (
-              <div key={col.id} className="flex-shrink-0" style={{ width: '290px' }}
+          <div className="d-flex gap-4 overflow-auto pb-4" style={{ minHeight: '70vh' }}>
+            {COLUMNS.map((col, idx) => (
+              <div key={col.id} className={`flex-shrink-0 animate-in stagger-${idx + 1}`} style={{ width: '320px' }}
                 onDragOver={e => e.preventDefault()} onDrop={() => handleDrop(col.id)}>
 
-                <div className="rounded-top p-2 d-flex justify-content-between align-items-center" style={{ backgroundColor: col.color }}>
-                  <span className="text-white fw-semibold">{col.label}</span>
-                  <span className="badge bg-white text-dark">{getTasksByStatus(col.id).length}</span>
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <span className="fw-semibold text-white fs-6 d-flex align-items-center gap-2">
+                    <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: col.color }} />
+                    {col.label}
+                  </span>
+                  <span className="badge" style={{ background: 'rgba(255,255,255,0.1)', color: '#cbd5e1' }}>{getTasksByStatus(col.id).length}</span>
                 </div>
 
-                <div className="bg-white rounded-bottom p-2 border border-top-0" style={{ minHeight: '400px' }}>
-                  {getTasksByStatus(col.id).map(task => (
-                    <div key={task.id} className="card mb-2 shadow-sm border-0"
-                      draggable onDragStart={() => handleDragStart(task)} style={{ cursor: 'grab' }}>
-                      <div className="card-body p-2">
+                <div className="glass-panel p-3" style={{ minHeight: '400px', background: 'rgba(15,23,42,0.4)' }}>
+                  {getTasksByStatus(col.id).map(task => {
+                    const neonMap = { p1: 'neon-border-purple', p2: 'neon-border-blue', p3: 'neon-border-cyan' };
+                    return (
+                      <div key={task.id} className={`card mb-3 shadow-none border-0 text-start ${neonMap[task.priority] || ''}`}
+                        draggable onDragStart={() => handleDragStart(task)} style={{ cursor: 'grab', background: 'rgba(15,23,42,0.6)', borderRadius: '12px', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', border: '1px solid var(--border-glass)' }} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.3)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}>
+                      <div className="card-body p-3">
 
-                        <div className="d-flex justify-content-between align-items-start mb-1">
-                          <p className="mb-0 fw-semibold small">{task.title}</p>
-                          <span className={`badge bg-${PRIORITY_COLORS[task.priority]} ms-1`} style={{ fontSize: '10px' }}>
+                        <div className="d-flex justify-content-between align-items-start mb-2">
+                          <p className="mb-0 fw-bold text-white lh-sm" style={{ fontSize: '0.9rem' }}>{task.title}</p>
+                          <span className={`badge bg-${PRIORITY_COLORS[task.priority]} ms-2`} style={{ fontSize: '10px', padding: '4px 8px' }}>
                             {PRIORITY_LABELS[task.priority]}
                           </span>
                         </div>
 
                         {task.description && (
-                          <p className="text-muted mb-1" style={{ fontSize: '11px' }}>
-                            {task.description.substring(0, 60)}{task.description.length > 60 ? '...' : ''}
+                          <p className="text-muted mb-3" style={{ fontSize: '0.8rem', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {task.description}
                           </p>
                         )}
 
-                        <div className="d-flex justify-content-between align-items-center mt-1">
-                          <span className="text-muted" style={{ fontSize: '11px' }}>
+                        <div className="d-flex justify-content-between align-items-center mt-1 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span style={{ fontSize: '0.75rem', color: '#94a3b8', background: 'rgba(0,0,0,0.2)', padding: '4px 8px', borderRadius: '4px' }}>
                             {task.assigned_to_name ? `👤 ${task.assigned_to_name}` : '👤 Unassigned'}
                           </span>
                           {task.story_points > 0 && (
-                            <span className="badge bg-light text-dark border" style={{ fontSize: '10px' }}>{task.story_points} pts</span>
+                            <span className="badge" style={{ fontSize: '0.75rem', background: 'rgba(59,130,246,0.15)', color: '#60a5fa' }}>{task.story_points} pts</span>
                           )}
                         </div>
 
                         <GitHubBadge task={task} onUpdated={handleGithubLinked} />
 
-                        <div className="d-flex gap-1 mt-2 flex-wrap align-items-center">
-                          <button className="btn btn-link btn-sm p-0 text-muted" style={{ fontSize: '11px' }}
+                        <div className="d-flex gap-2 mt-3 flex-wrap align-items-center">
+                          <button className="btn btn-link btn-sm p-0 text-muted" style={{ fontSize: '0.75rem', textDecoration: 'none' }}
                             onClick={e => { e.stopPropagation(); setExpandedTask(expandedTask === task.id ? null : task.id); }}>
-                            💬 Comments
+                            💬 {expandedTask === task.id ? 'Close' : 'Comments'}
                           </button>
-                          <button className="btn btn-link btn-sm p-0 text-muted" style={{ fontSize: '11px' }}
+                          <button className="btn btn-link btn-sm p-0 text-muted" style={{ fontSize: '0.75rem', textDecoration: 'none' }}
                             onClick={e => { e.stopPropagation(); setExpandedTask(expandedTask === `attach_${task.id}` ? null : `attach_${task.id}`); }}>
                             📎 Files
                           </button>
                           <button
                             className="btn btn-link btn-sm p-0 ms-auto"
-                            style={{ fontSize: '11px', color: task.github_branch ? '#3fb950' : '#8b949e', textDecoration: 'none' }}
+                            style={{ fontSize: '0.75rem', color: task.github_branch ? '#34d399' : '#94a3b8', textDecoration: 'none', fontWeight: task.github_branch ? 600 : 400 }}
                             onClick={e => { e.stopPropagation(); setGithubLinkTask(task); }}
                           >
-                            <svg height="11" viewBox="0 0 16 16" fill="currentColor" style={{ marginRight: 3, verticalAlign: 'middle' }}>
+                            <svg height="12" viewBox="0 0 16 16" fill="currentColor" style={{ marginRight: 4, verticalAlign: 'text-top' }}>
                               <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
                             </svg>
                             {task.github_branch ? 'Linked ✓' : 'Link GitHub'}
@@ -590,18 +592,21 @@ function ProjectView() {
                         </div>
 
                         {expandedTask === task.id && (
-                          <div onClick={e => e.stopPropagation()}><TaskComments taskId={task.id} /></div>
+                          <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }} onClick={e => e.stopPropagation()}><TaskComments taskId={task.id} /></div>
                         )}
                         {expandedTask === `attach_${task.id}` && (
-                          <div onClick={e => e.stopPropagation()}><TaskAttachments taskId={task.id} /></div>
+                          <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }} onClick={e => e.stopPropagation()}><TaskAttachments taskId={task.id} /></div>
                         )}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
 
-                  <button className="btn btn-light btn-sm w-100 text-muted mt-1"
+                  <button className="btn w-100 text-muted mt-2 py-2 fw-semibold"
                     onClick={() => { setActiveColumn(col.id); setShowTaskModal(true); }}
-                    style={{ border: '1px dashed #ccc' }}>
+                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '8px', transition: 'all 0.2s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}>
                     + Add task
                   </button>
                 </div>
@@ -617,13 +622,13 @@ function ProjectView() {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title fw-bold">Add Task to {COLUMNS.find(c => c.id === activeColumn)?.label}</h5>
-                <button className="btn-close" onClick={() => setShowTaskModal(false)} />
+                <h5 className="modal-title fw-bold text-white">Add Task to {COLUMNS.find(c => c.id === activeColumn)?.label}</h5>
+                <button className="btn-close btn-close-white" onClick={() => setShowTaskModal(false)} />
               </div>
               <form onSubmit={handleCreateTask}>
-                <div className="modal-body">
+                <div className="modal-body" style={{ background: '#020617' }}>
                   <div className="mb-3">
-                    <label className="form-label fw-semibold">Task Title *</label>
+                    <label className="form-label fw-semibold text-muted" style={{ fontSize: '0.85rem' }}>Task Title *</label>
                     <input type="text" className="form-control" placeholder="e.g. Implement login API"
                       value={taskForm.title} onChange={e => setTaskForm({ ...taskForm, title: e.target.value })} required />
                   </div>
@@ -648,13 +653,13 @@ function ProjectView() {
                         value={taskForm.story_points} onChange={e => setTaskForm({ ...taskForm, story_points: parseInt(e.target.value) })} />
                     </div>
                   </div>
-                  <div className="p-2 rounded" style={{ background: '#f8f9fa', border: '1px dashed #dee2e6' }}>
-                    <small className="text-muted">💡 After creating, click <strong>Link GitHub</strong> on the card to link a branch or commit.</small>
+                  <div className="p-3 rounded mb-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--border-glass)' }}>
+                    <small className="text-muted">💡 After creating, click <strong className="text-white">Link GitHub</strong> on the card to link a branch or commit.</small>
                   </div>
                 </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowTaskModal(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-primary" disabled={creating}>{creating ? 'Adding...' : 'Add Task'}</button>
+                <div className="modal-footer" style={{ background: '#020617' }}>
+                  <button type="button" className="btn-premium-outline py-2 mt-0" onClick={() => setShowTaskModal(false)}>Cancel</button>
+                  <button type="submit" className="btn-premium py-2 mt-0" disabled={creating}>{creating ? 'Adding...' : 'Add Task'}</button>
                 </div>
               </form>
             </div>

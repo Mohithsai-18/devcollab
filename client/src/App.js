@@ -1,5 +1,7 @@
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -32,7 +34,7 @@ function App() {
 <Route path="/pr-review/:id" element={<ProtectedRoute><PRQualityPage /></ProtectedRoute>} />
 <Route path="/impact/:id"    element={<ProtectedRoute><ImpactAnalyserPage /></ProtectedRoute>} />
 
-        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="/" element={<Landing />} />
 
         <Route path="/dashboard" element={
           <ProtectedRoute><Dashboard /></ProtectedRoute>

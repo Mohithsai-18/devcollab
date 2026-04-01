@@ -23,10 +23,10 @@ function GitHubCallback() {
   }, []);
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center">
+    <div className="dark-page-bg d-flex align-items-center justify-content-center">
       <div className="text-center">
         <div className="spinner-border text-primary mb-3" />
-        <p className="text-muted">Signing you in with GitHub...</p>
+        <p className="text-white">Signing you in with GitHub...</p>
       </div>
     </div>
   );

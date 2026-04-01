@@ -28,7 +28,7 @@ const sendTaskAssignedEmail = async (toEmail, toName, taskTitle, projectName, as
               <p style="margin: 8px 0 0; color: #666;">Project: <strong>${projectName}</strong></p>
               <p style="margin: 4px 0 0; color: #666;">Assigned by: <strong>${assignedBy}</strong></p>
             </div>
-            <a href="http://localhost:3000/dashboard"
+            <a href="${process.env.CLIENT_URL || 'http://localhost:3005'}/dashboard"
                style="background: #2E75B6; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 10px;">
               View Task →
             </a>
@@ -64,7 +64,7 @@ const sendSprintStartedEmail = async (toEmail, toName, sprintName, projectName) 
               <h3 style="margin: 0; color: #333;">🏃 ${sprintName}</h3>
               <p style="margin: 8px 0 0; color: #666;">Project: <strong>${projectName}</strong></p>
             </div>
-            <a href="http://localhost:3000/dashboard"
+            <a href="${process.env.CLIENT_URL || 'http://localhost:3005'}/dashboard"
                style="background: #198754; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">
               View Sprint →
             </a>
@@ -100,7 +100,7 @@ const sendWelcomeEmail = async (toEmail, toName) => {
               <li>Track sprints and velocity</li>
               <li>View analytics and charts</li>
             </ul>
-            <a href="http://localhost:3000/dashboard"
+            <a href="${process.env.CLIENT_URL || 'http://localhost:3005'}/dashboard"
                style="background: #2E75B6; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 10px;">
               Go to Dashboard →
             </a>

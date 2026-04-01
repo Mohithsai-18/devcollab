@@ -1,15 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTheme } from '../context/ThemeContext';
 import api from '../utils/api';
 
-const PRIORITY_LABELS = { p1: 'Critical', p2: 'High', p3: 'Medium', p4: 'Low' };
-const PRIORITY_COLORS = { p1: 'danger', p2: 'warning', p3: 'info', p4: 'secondary' };
 
 function SprintPlanning() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
   const [project, setProject] = useState(null);
   const [sprints, setSprints] = useState([]);
   const [backlogTasks, setBacklogTasks] = useState([]);
@@ -25,11 +21,7 @@ function SprintPlanning() {
   const [applyingEstimates, setApplyingEstimates] = useState(false);
   const [selectedEstimates, setSelectedEstimates] = useState({});
 
-  useEffect(() => {
-    fetchAll();
-  }, [id]);
-
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     try {
       const [projectRes, sprintsRes, tasksRes] = await Promise.all([
         api.get(`/projects/${id}`),
@@ -44,7 +36,11 @@ function SprintPlanning() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   const handleCreateSprint = async (e) => {
     e.preventDefault();
@@ -114,9 +110,6 @@ function SprintPlanning() {
     }
   };
 
-  const getSprintTasks = (sprintId) =>
-    backlogTasks.filter(t => t.sprint_id === sprintId);
-
   const getStatusColor = (status) => {
     const colors = {
       planning: 'secondary',
@@ -140,24 +133,25 @@ function SprintPlanning() {
   });
 
   return (
-    <div className="min-vh-100 bg-body">
+    <div className="dark-page-bg">
 
       {/* Navbar */}
-      <nav className="navbar navbar-dark bg-primary px-4">
+      <nav className="d-flex justify-content-between align-items-center px-4" style={{ height: '72px', borderBottom: '1px solid var(--border-glass)', background: 'rgba(6,9,19,0.8)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div className="d-flex align-items-center gap-3">
-
           <button
-            className="btn btn-outline-light btn-sm"
+            className="btn-premium-outline py-1 px-3 mt-0"
+            style={{ fontSize: '0.85rem' }}
             onClick={() => navigate(`/project/${id}`)}
           >
             ← Back
           </button>
-          <span className="navbar-brand fw-bold mb-0">
+          <span className="fw-bold text-white fs-5">
             Sprint Planning — {project?.name}
           </span>
         </div>
         <button
-          className="btn btn-light btn-sm fw-semibold"
+          className="btn-premium py-1 px-3 mt-0"
+          style={{ fontSize: '0.85rem' }}
           onClick={() => setShowModal(true)}
         >
           + New Sprint
@@ -169,13 +163,13 @@ function SprintPlanning() {
 
           {/* Left — Backlog */}
           <div className="col-md-4">
-            <div className="card border-0 shadow-sm">
-              <div className="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-                <span className="fw-bold">📋 Backlog</span>
+            <div className="glass-panel p-0 overflow-hidden">
+              <div className="p-3 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.03)' }}>
+                <span className="fw-bold text-white">📋 Backlog</span>
                 <div className="d-flex gap-2 align-items-center">
                   <button
                     className="btn btn-warning btn-sm py-0 px-2 fw-semibold"
-                    style={{ fontSize: '11px' }}
+                    style={{ fontSize: '11px', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#fbbf24' }}
                     disabled={aiEstimating}
                     onClick={async () => {
                       setAiEstimating(true);
@@ -196,7 +190,7 @@ function SprintPlanning() {
                   >
                     {aiEstimating ? '⏳...' : '✨ AI Estimate'}
                   </button>
-                  <span className="badge bg-white text-dark">{backlogTasks.filter(t => !t.sprint_id).length}</span>
+                  <span className="badge" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }}>{backlogTasks.filter(t => !t.sprint_id).length}</span>
                 </div>
               </div>
               <div className="card-body p-2" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
@@ -204,7 +198,7 @@ function SprintPlanning() {
                   <p className="text-muted text-center mt-3 small">No unassigned tasks</p>
                 ) : (
                   backlogTasks.filter(t => !t.sprint_id).map(task => (
-                    <div key={task.id} className="card mb-2 border-0 bg-light">
+                    <div key={task.id} className="glass-panel mb-2 p-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
                       <div className="card-body p-2">
                         <div className="d-flex justify-content-between align-items-start">
                           <div className="flex-grow-1">
@@ -255,7 +249,7 @@ function SprintPlanning() {
               </div>
             ) : (
               sprints.map(sprint => {
-                const sprintTasks = backlogTasks.filter(t => t.sprint_id == sprint.id);
+                const sprintTasks = backlogTasks.filter(t => String(t.sprint_id) === String(sprint.id));
                 const totalPoints = sprintTasks.reduce((s, t) => s + (t.story_points || 0), 0);
                 const completedPoints = sprintTasks
                   .filter(t => t.status === 'done')
@@ -264,10 +258,10 @@ function SprintPlanning() {
                   ? Math.round((completedPoints / totalPoints) * 100) : 0;
 
                 return (
-                  <div key={sprint.id} className="card border-0 shadow-sm mb-4">
-                    <div className="card-header bg-white d-flex justify-content-between align-items-center">
+                  <div key={sprint.id} className="glass-panel mb-4 p-0 overflow-hidden">
+                    <div className="p-3 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.03)' }}>
                       <div>
-                        <h6 className="fw-bold mb-0">
+                        <h6 className="fw-bold mb-0 text-white">
                           {sprint.name}
                           <span className={`badge bg-${getStatusColor(sprint.status)} ms-2`}>
                             {sprint.status}
@@ -329,8 +323,7 @@ function SprintPlanning() {
                         <div className="row">
                           {sprintTasks.map(task => (
                             <div key={task.id} className="col-md-6 mb-2">
-                              <div className="card border-0 bg-light">
-                                <div className="card-body p-2">
+                                <div className="card-body p-2" style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
                                   <div className="d-flex justify-content-between">
                                     <p className="mb-0 small fw-semibold">{task.title}</p>
                                     <button
@@ -352,7 +345,6 @@ function SprintPlanning() {
                                     </span>
                                   </div>
                                 </div>
-                              </div>
                             </div>
                           ))}
                         </div>
@@ -373,7 +365,7 @@ function SprintPlanning() {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title fw-bold">Create New Sprint</h5>
-                <button className="btn-close" onClick={() => setShowModal(false)} />
+                <button className="btn-close btn-close-white" onClick={() => setShowModal(false)} />
               </div>
               <form onSubmit={handleCreateSprint}>
                 <div className="modal-body">

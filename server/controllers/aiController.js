@@ -165,9 +165,8 @@ ${codeContext ? `CODE:\n${codeContext}` : ''}`;
       sources = [{ rank: 1, type: 'fallback', source: 'keyword-matching', relevance: 'N/A' }];
     }
 
-    // ── Build prompt ────────────────────────────────────────────────────────
     const prompt = `You are an expert developer assistant for the project "${projects[0]?.name || 'Unknown'}".
-You have been given relevant context from the project's codebase, tasks, handoffs, and code snippets retrieved via semantic search.
+You operate under a strict EXACT INFORMATION policy. You MUST extract answers ONLY from the provided context.
 
 PROJECT: ${projects[0]?.name} — ${projects[0]?.description || 'No description'}
 
@@ -177,11 +176,9 @@ ${ragContext}
 DEVELOPER QUESTION: ${question}
 
 Instructions:
-- Answer concisely and accurately based on the retrieved context
-- If referencing code, quote specific lines and mention the file path
-- If referencing tasks, mention their status
-- If the context doesn't contain enough info to answer, say so honestly
-- Format your response with markdown for readability`;
+- ZERO HALLUCINATIONS: Answer exclusively and strictly based on the RETRIEVED CONTEXT. If the context does not contain the exact answer, you must respond with: "I cannot find the exact information for this in the current context."
+- EXACT CITATIONS: You must directly quote the relevant code or text and explicitly cite the file path or task ID you pulled it from.
+- Format your response with beautiful, readable markdown.`;
 
     const answer = await callGroq(prompt);
     res.json({

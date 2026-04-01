@@ -32,15 +32,15 @@ function Register() {
   };
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-      <div className="card shadow p-4" style={{ width: '420px' }}>
+    <div className="dark-page-bg d-flex align-items-center justify-content-center">
+      <div className="glass-panel p-5 animate-in" style={{ width: '440px', border: '1px solid var(--border-glass)' }}>
         <div className="text-center mb-4">
-          <h2 className="fw-bold text-primary">DevCollab</h2>
-          <p className="text-muted">Create your account</p>
+          <h2 className="fw-bold text-white">DevCollab</h2>
+          <p style={{ color: 'var(--text-muted)' }}>Create your account</p>
         </div>
 
         {error && (
-          <div className="alert alert-danger py-2">{error}</div>
+          <div className="alert alert-danger py-2" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>{error}</div>
         )}
 
         <form onSubmit={handleSubmit}>
@@ -100,7 +100,7 @@ function Register() {
 
           <button
             type="submit"
-            className="btn btn-primary w-100 py-2"
+            className="btn-premium w-100 py-2 mt-0"
             disabled={loading}
           >
             {loading ? (

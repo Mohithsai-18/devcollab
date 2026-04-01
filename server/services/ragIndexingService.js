@@ -86,10 +86,15 @@ const updateIndexStatus = async (projectId, status, docsIndexed = 0, errorMessag
 
 // ── Get index status ────────────────────────────────────────────────────────
 const getIndexStatus = async (projectId) => {
-  const [rows] = await pool.query(
-    'SELECT * FROM rag_index_status WHERE project_id = ?', [projectId]
-  );
-  return rows[0] || { project_id: projectId, status: 'idle', docs_indexed: 0 };
+  try {
+    const [rows] = await pool.query(
+      'SELECT * FROM rag_index_status WHERE project_id = ?', [projectId]
+    );
+    return rows[0] || { project_id: projectId, status: 'idle', docs_indexed: 0 };
+  } catch (err) {
+    // Table may not exist yet
+    return { project_id: projectId, status: 'idle', docs_indexed: 0 };
+  }
 };
 
 // ══════════════════════════════════════════════════════════════════════════════

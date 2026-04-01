@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import GitHubImportModal from '../components/Common/GitHubImportModal';
@@ -31,65 +31,65 @@ const LangDot = ({ lang }) => (
 );
 
 const S = {
-  page: { minHeight: '100vh', background: '#0d1117', color: '#e6edf3', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', fontSize: 14 },
-  nav: { background: '#161b22', borderBottom: '1px solid #30363d', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 },
+  page: { minHeight: '100vh', fontFamily: 'inherit', fontSize: 14, paddingBottom: 40 },
+  nav: { background: 'rgba(6,9,19,0.8)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border-glass)', padding: '0 24px', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 },
   navLeft: { display: 'flex', alignItems: 'center', gap: 16 },
-  navRight: { display: 'flex', alignItems: 'center', gap: 8 },
-  backBtn: { background: 'transparent', border: '1px solid #30363d', color: '#8b949e', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 13 },
-  logo: { display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, fontSize: 15 },
-  container: { maxWidth: 1100, margin: '0 auto', padding: '32px 24px' },
+  navRight: { display: 'flex', alignItems: 'center', gap: 12 },
+  backBtn: { background: 'transparent', border: '1px solid var(--border-glass)', color: 'var(--text-main)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 500 },
+  logo: { display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700, fontSize: 18, color: 'white' },
+  container: { maxWidth: 1100, margin: '0 auto', padding: '40px 24px' },
   emptyWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 80, gap: 16 },
-  emptyTitle: { fontSize: 22, fontWeight: 600, color: '#e6edf3' },
-  emptySub: { color: '#8b949e', textAlign: 'center', maxWidth: 400, lineHeight: 1.6 },
-  connectBtn: { background: '#238636', border: '1px solid #2ea043', color: '#fff', borderRadius: 6, padding: '10px 20px', cursor: 'pointer', fontSize: 14, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 },
-  importBtn: { background: '#1f6feb', border: '1px solid #388bfd', color: '#fff', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 },
-  repoHeader: { background: '#161b22', border: '1px solid #30363d', borderRadius: 10, padding: '20px 24px', marginBottom: 16 },
-  repoTitle: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' },
-  repoName: { fontSize: 20, fontWeight: 600, color: '#58a6ff' },
-  badge: (color) => ({ background: color === 'green' ? '#1a3a2a' : '#21262d', border: `1px solid ${color === 'green' ? '#238636' : '#30363d'}`, color: color === 'green' ? '#3fb950' : '#8b949e', borderRadius: 20, padding: '2px 10px', fontSize: 12, fontWeight: 500 }),
-  repoDesc: { color: '#8b949e', marginBottom: 12, fontSize: 14, lineHeight: 1.5 },
-  repoMeta: { display: 'flex', gap: 20, flexWrap: 'wrap', color: '#8b949e', fontSize: 13 },
-  metaItem: { display: 'flex', alignItems: 'center', gap: 5 },
-  openBtn: { background: '#21262d', border: '1px solid #30363d', color: '#e6edf3', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' },
-  disconnectBtn: { background: 'transparent', border: '1px solid #f85149', color: '#f85149', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', fontSize: 13 },
-  tabs: { display: 'flex', marginBottom: 20, borderBottom: '1px solid #30363d' },
-  tab: (active) => ({ background: 'transparent', border: 'none', borderBottom: active ? '2px solid #f78166' : '2px solid transparent', color: active ? '#e6edf3' : '#8b949e', padding: '10px 16px', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 6, fontWeight: active ? 500 : 400 }),
-  tabCount: (active) => ({ background: active ? '#30363d' : '#21262d', borderRadius: 20, padding: '1px 8px', fontSize: 12 }),
-  card: { background: '#161b22', border: '1px solid #30363d', borderRadius: 10, overflow: 'hidden' },
-  cardHeader: { background: '#161b22', borderBottom: '1px solid #30363d', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8 },
-  row: (last) => ({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: last ? 'none' : '1px solid #21262d', transition: 'background .1s' }),
-  rowLeft: { display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 },
-  avatar: { width: 32, height: 32, borderRadius: '50%', background: '#21262d', border: '1px solid #30363d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 13, flexShrink: 0, color: '#8b949e' },
-  commitMsg: { color: '#58a6ff', fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 500, background: 'none', border: 'none', padding: 0, textAlign: 'left', fontSize: 14 },
-  sha: { background: '#21262d', border: '1px solid #30363d', borderRadius: 6, padding: '2px 8px', fontSize: 12, color: '#8b949e', fontFamily: 'monospace' },
-  branchName: { fontWeight: 500, color: '#e6edf3', fontFamily: 'monospace', fontSize: 13 },
-  fileName: (isDir) => ({ color: isDir ? '#58a6ff' : '#e6edf3', fontWeight: isDir ? 500 : 400, cursor: isDir ? 'pointer' : 'default', background: 'none', border: 'none', padding: 0, textAlign: 'left', fontSize: 14, fontFamily: isDir ? 'inherit' : 'monospace' }),
-  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 },
-  modal: { background: '#161b22', border: '1px solid #30363d', borderRadius: 12, width: '100%', maxWidth: 640, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
-  modalHeader: { padding: '20px 24px 16px', borderBottom: '1px solid #30363d', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  modalTitle: { fontSize: 18, fontWeight: 600, color: '#e6edf3' },
-  closeBtn: { background: 'transparent', border: 'none', color: '#8b949e', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 4 },
-  modalBody: { padding: '20px 24px', overflowY: 'auto', flex: 1 },
-  modalFooter: { padding: '16px 24px', borderTop: '1px solid #30363d', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  label: { display: 'block', color: '#8b949e', fontSize: 12, marginBottom: 6, fontWeight: 500 },
-  tokenRow: { display: 'flex', gap: 8 },
-  input: { flex: 1, background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', padding: '8px 12px', fontSize: 14, outline: 'none', fontFamily: 'monospace' },
-  fetchBtn: (disabled) => ({ background: disabled ? '#21262d' : '#238636', border: `1px solid ${disabled ? '#30363d' : '#2ea043'}`, color: disabled ? '#484f58' : '#fff', borderRadius: 6, padding: '8px 16px', cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap' }),
-  hint: { color: '#8b949e', fontSize: 12, marginTop: 8, lineHeight: 1.6 },
-  link: { color: '#58a6ff', textDecoration: 'none' },
-  divider: { border: 'none', borderTop: '1px solid #30363d', margin: '20px 0' },
-  manualRow: { display: 'flex', gap: 8, marginTop: 8 },
-  repoListHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  searchInput: { width: '100%', background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', padding: '8px 12px', fontSize: 14, outline: 'none', marginBottom: 12 },
-  repoItem: (sel) => ({ background: sel ? '#1c2d3a' : '#0d1117', border: `1px solid ${sel ? '#1f6feb' : '#30363d'}`, borderRadius: 8, padding: '14px 16px', cursor: 'pointer', marginBottom: 8 }),
+  emptyTitle: { fontSize: 24, fontWeight: 700, color: 'white' },
+  emptySub: { color: 'var(--text-muted)', textAlign: 'center', maxWidth: 450, lineHeight: 1.6 },
+  connectBtn: { background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))', border: 'none', color: '#fff', borderRadius: 8, padding: '12px 24px', cursor: 'pointer', fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, marginTop: 16, boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)' },
+  importBtn: { background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', color: '#60a5fa', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' },
+  repoHeader: { background: 'var(--bg-card)', backdropFilter: 'blur(16px)', border: '1px solid var(--border-glass)', borderRadius: 16, padding: '24px 32px', marginBottom: 20, boxShadow: '0 8px 32px rgba(0,0,0,0.3)' },
+  repoTitle: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' },
+  repoName: { fontSize: 24, fontWeight: 700, color: 'white', letterSpacing: '-0.01em' },
+  badge: (color) => ({ background: color === 'green' ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${color === 'green' ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.1)'}`, color: color === 'green' ? '#34d399' : 'var(--text-muted)', borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 600 }),
+  repoDesc: { color: 'var(--text-muted)', marginBottom: 16, fontSize: 15, lineHeight: 1.6 },
+  repoMeta: { display: 'flex', gap: 24, flexWrap: 'wrap', color: 'var(--text-muted)', fontSize: 13, fontWeight: 500 },
+  metaItem: { display: 'flex', alignItems: 'center', gap: 6 },
+  openBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', color: 'white', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', transition: 'all 0.2s' },
+  disconnectBtn: { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: 'all 0.2s' },
+  tabs: { display: 'flex', marginBottom: 24, borderBottom: '1px solid var(--border-glass)', gap: 8 },
+  tab: (active) => ({ background: 'transparent', border: 'none', borderBottom: active ? '2px solid var(--accent-blue)' : '2px solid transparent', color: active ? 'white' : 'var(--text-muted)', padding: '12px 20px', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8, fontWeight: active ? 600 : 500, transition: 'all 0.2s' }),
+  tabCount: (active) => ({ background: active ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.1)', color: active ? '#60a5fa' : 'var(--text-muted)', borderRadius: 20, padding: '2px 10px', fontSize: 12 }),
+  card: { background: 'var(--bg-card)', backdropFilter: 'blur(16px)', border: '1px solid var(--border-glass)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' },
+  cardHeader: { background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border-glass)', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 12 },
+  row: (last) => ({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: last ? 'none' : '1px solid var(--border-glass)', transition: 'background 0.2s' }),
+  rowLeft: { display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 },
+  avatar: { width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 14, flexShrink: 0, boxShadow: '0 4px 10px rgba(59,130,246,0.3)' },
+  commitMsg: { color: '#f8fafc', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 600, background: 'none', border: 'none', padding: 0, textAlign: 'left', fontSize: 15, transition: 'color 0.2s' },
+  sha: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', borderRadius: 6, padding: '4px 10px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' },
+  branchName: { fontWeight: 600, color: 'white', fontFamily: 'monospace', fontSize: 14 },
+  fileName: (isDir) => ({ color: isDir ? '#60a5fa' : 'white', fontWeight: isDir ? 600 : 500, cursor: isDir ? 'pointer' : 'default', background: 'none', border: 'none', padding: 0, textAlign: 'left', fontSize: 15, fontFamily: 'inherit', transition: 'color 0.2s' }),
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 24 },
+  modal: { background: 'var(--bg-card)', border: '1px solid var(--border-glass)', borderRadius: 20, width: '100%', maxWidth: 680, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' },
+  modalHeader: { padding: '24px 32px 20px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  modalTitle: { fontSize: 20, fontWeight: 700, color: 'white' },
+  closeBtn: { background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 24, lineHeight: 1, padding: 4, transition: 'color 0.2s' },
+  modalBody: { padding: '24px 32px', overflowY: 'auto', flex: 1 },
+  modalFooter: { padding: '20px 32px', borderTop: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)' },
+  label: { display: 'block', color: 'var(--text-muted)', fontSize: 13, textTransform: 'uppercase', marginBottom: 8, fontWeight: 600, letterSpacing: '0.05em' },
+  tokenRow: { display: 'flex', gap: 12 },
+  input: { flex: 1, background: 'rgba(15,23,42,0.6)', border: '1px solid var(--border-glass)', borderRadius: 8, color: 'white', padding: '12px 16px', fontSize: 15, outline: 'none', fontFamily: 'monospace', transition: 'all 0.2s' },
+  fetchBtn: (disabled) => ({ background: disabled ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, var(--accent-blue), var(--accent-purple))', border: disabled ? '1px solid var(--border-glass)' : 'none', color: disabled ? 'var(--text-muted)' : 'white', borderRadius: 8, padding: '12px 20px', cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap', transition: 'all 0.2s', boxShadow: disabled ? 'none' : '0 4px 15px rgba(139, 92, 246, 0.4)' }),
+  hint: { color: 'var(--text-muted)', fontSize: 13, marginTop: 12, lineHeight: 1.6 },
+  link: { color: '#60a5fa', textDecoration: 'none', fontWeight: 500 },
+  divider: { border: 'none', borderTop: '1px solid var(--border-glass)', margin: '32px 0' },
+  manualRow: { display: 'flex', gap: 12, marginTop: 12 },
+  repoListHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  searchInput: { width: '100%', background: 'rgba(15,23,42,0.6)', border: '1px solid var(--border-glass)', borderRadius: 8, color: 'white', padding: '12px 16px', fontSize: 15, outline: 'none', marginBottom: 16, transition: 'all 0.2s' },
+  repoItem: (sel) => ({ background: sel ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.02)', border: `1px solid ${sel ? 'var(--accent-blue)' : 'var(--border-glass)'}`, borderRadius: 12, padding: '16px 20px', cursor: 'pointer', marginBottom: 12, transition: 'all 0.2s' }),
   repoItemTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' },
-  repoItemName: { fontWeight: 600, color: '#e6edf3', fontSize: 14, display: 'flex', alignItems: 'center', gap: 6 },
-  repoItemDesc: { color: '#8b949e', fontSize: 12, marginTop: 4, lineHeight: 1.5 },
-  repoItemMeta: { display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' },
-  repoMini: { color: '#8b949e', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 },
-  selectedBadge: { background: '#1f6feb', borderRadius: 20, padding: '2px 10px', fontSize: 12, color: '#fff', fontWeight: 500 },
-  alert: (type) => ({ background: type === 'error' ? '#1a0a0a' : '#0a1a0a', border: `1px solid ${type === 'error' ? '#f85149' : '#238636'}`, color: type === 'error' ? '#f85149' : '#3fb950', borderRadius: 6, padding: '10px 14px', fontSize: 13, marginBottom: 16 }),
-  spinner: { width: 18, height: 18, border: '2px solid #30363d', borderTop: '2px solid #58a6ff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 },
+  repoItemName: { fontWeight: 700, color: 'white', fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 },
+  repoItemDesc: { color: 'var(--text-muted)', fontSize: 14, marginTop: 6, lineHeight: 1.5 },
+  repoItemMeta: { display: 'flex', gap: 16, marginTop: 12, flexWrap: 'wrap' },
+  repoMini: { color: 'var(--text-muted)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 500 },
+  selectedBadge: { background: 'var(--accent-blue)', borderRadius: 20, padding: '4px 12px', fontSize: 12, color: 'white', fontWeight: 600, boxShadow: '0 2px 10px rgba(59,130,246,0.4)' },
+  alert: (type) => ({ background: type === 'error' ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', border: `1px solid ${type === 'error' ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`, color: type === 'error' ? '#f87171' : '#34d399', borderRadius: 8, padding: '12px 16px', fontSize: 14, marginBottom: 20, fontWeight: 500 }),
+  spinner: { width: 20, height: 20, border: '2px solid rgba(255,255,255,0.1)', borderTop: '2px solid white', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 },
 };
 
 export default function GitHub() {
@@ -130,7 +130,33 @@ export default function GitHub() {
 
   const tokenRef = useRef(null);
 
-  useEffect(() => { loadRepo(); }, [id]); // eslint-disable-line
+  const loadConnectedRepos = useCallback(async () => {
+    try {
+      const res = await api.get(`/github/repos/connected/${id}`);
+      setConnectedRepos(res.data);
+    } catch {}
+  }, [id]);
+
+  const loadCommits  = useCallback(async () => { try { const r = await api.get(`/github/commits/${id}`);  setCommits(r.data);  } catch {} }, [id]);
+  const loadBranches = useCallback(async () => { try { const r = await api.get(`/github/branches/${id}`); setBranches(r.data); } catch {} }, [id]);
+  const loadFiles    = useCallback(async (path) => {
+    try {
+      const r = await api.get(`/github/files/${id}?path=${encodeURIComponent(path)}`);
+      setFiles(r.data); setCurrentPath(path);
+    } catch {}
+  }, [id]);
+
+  const loadRepo = useCallback(async () => {
+    try {
+      const res = await api.get(`/github/repo/${id}`);
+      setRepoInfo(res.data);
+      setConnected(true);
+      await Promise.all([loadCommits(), loadBranches(), loadFiles(''), loadConnectedRepos()]);
+    } catch { setConnected(false); }
+    finally { setLoading(false); }
+  }, [id, loadCommits, loadBranches, loadFiles, loadConnectedRepos]);
+
+  useEffect(() => { loadRepo(); }, [id, loadRepo]);
 
   useEffect(() => {
     if (showModal) {
@@ -140,32 +166,6 @@ export default function GitHub() {
       else setTimeout(() => tokenRef.current?.focus(), 100);
     }
   }, [showModal]); // eslint-disable-line
-
-  const loadRepo = async () => {
-    try {
-      const res = await api.get(`/github/repo/${id}`);
-      setRepoInfo(res.data);
-      setConnected(true);
-      await Promise.all([loadCommits(), loadBranches(), loadFiles(''), loadConnectedRepos()]);
-    } catch { setConnected(false); }
-    finally { setLoading(false); }
-  };
-
-  const loadConnectedRepos = async () => {
-    try {
-      const res = await api.get(`/github/repos/connected/${id}`);
-      setConnectedRepos(res.data);
-    } catch {}
-  };
-
-  const loadCommits  = async () => { try { const r = await api.get(`/github/commits/${id}`);  setCommits(r.data);  } catch {} };
-  const loadBranches = async () => { try { const r = await api.get(`/github/branches/${id}`); setBranches(r.data); } catch {} };
-  const loadFiles    = async (path) => {
-    try {
-      const r = await api.get(`/github/files/${id}?path=${encodeURIComponent(path)}`);
-      setFiles(r.data); setCurrentPath(path);
-    } catch {}
-  };
 
   const fetchRepos = async (token) => {
     if (!token) return;
@@ -231,13 +231,9 @@ export default function GitHub() {
   );
 
   return (
-    <div style={S.page}>
+    <div className="dark-page-bg" style={S.page}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        button:hover { opacity: 0.85; }
-        input:focus { border-color: #58a6ff !important; box-shadow: 0 0 0 3px rgba(88,166,255,0.15); }
-        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #161b22; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
       `}</style>
 
       {/* Nav */}
@@ -279,7 +275,7 @@ export default function GitHub() {
         )}
 
         {!connected ? (
-          <div style={S.emptyWrap}>
+          <div style={S.emptyWrap} className="animate-in stagger-1">
             <svg height="64" viewBox="0 0 16 16" fill="#30363d">
               <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
             </svg>
@@ -295,7 +291,7 @@ export default function GitHub() {
         ) : (
           <>
             {/* Repo header */}
-            <div style={S.repoHeader}>
+            <div className="glass-panel p-4 mb-4 animate-in stagger-1">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
                 <div style={{ flex: 1 }}>
                   <div style={S.repoTitle}>
@@ -326,67 +322,66 @@ export default function GitHub() {
               </div>
             </div>
 
-            {/* ── Multi-repo switcher ── */}
-            <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                <div style={{ fontSize: 13, color: '#8b949e' }}>
-                  <span style={{ color: '#e6edf3', fontWeight: 500 }}>
-                    {connectedRepos.length} repo{connectedRepos.length !== 1 ? 's' : ''} connected
-                  </span>
-                  {' · '}active:{' '}
-                  <code style={{ color: '#58a6ff', background: '#21262d', padding: '1px 6px', borderRadius: 4 }}>
-                    {repoInfo?.full_name}
-                  </code>
+            {/* ── Premium Multi-repo switcher ── */}
+            <div className="glass-panel" style={{ padding: '20px 24px', marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg height="20" viewBox="0 0 16 16" fill="#3b82f6"><path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8z"/></svg>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'white' }}>Repository Switching</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
+                      {connectedRepos.length} repository connections available for this project
+                    </div>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button
-                    onClick={() => setShowRepoSwitcher(!showRepoSwitcher)}
-                    style={{ background: '#21262d', border: '1px solid #30363d', color: '#e6edf3', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12 }}
-                  >
-                    🔀 {showRepoSwitcher ? 'Hide' : 'Switch Repo'}
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <button onClick={() => setShowRepoSwitcher(!showRepoSwitcher)} style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', color: '#60a5fa', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 14, fontWeight: 600, transition: 'all 0.2s' }}>
+                    🔀 {showRepoSwitcher ? 'Hide Switcher' : 'Switch Repository'}
                   </button>
-                  <button
-                    onClick={() => setShowModal(true)}
-                    style={{ background: 'transparent', border: '1px solid #238636', color: '#3fb950', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12 }}
-                  >
-                    + Connect another
+                  <button onClick={() => setShowModal(true)} style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', color: '#34d399', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 14, fontWeight: 600, transition: 'all 0.2s' }}>
+                    + Connect Another
                   </button>
                 </div>
               </div>
 
-              {/* Repo list */}
+              {/* Repo list dropdown */}
               {showRepoSwitcher && connectedRepos.length > 0 && (
-                <div style={{ marginTop: 12, borderTop: '1px solid #21262d', paddingTop: 12 }}>
+                <div style={{ marginTop: 20, borderTop: '1px solid var(--border-glass)', paddingTop: 20, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
                   {connectedRepos.map(repo => (
                     <div key={repo.id} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '10px 12px', marginBottom: 6, borderRadius: 6,
-                      background: repo.is_active ? '#1c2d3a' : '#0d1117',
-                      border: `1px solid ${repo.is_active ? '#1f6feb' : '#30363d'}`,
+                      display: 'flex', flexDirection: 'column', padding: '16px', borderRadius: 12,
+                      background: repo.is_active ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.02)',
+                      border: `1px solid ${repo.is_active ? 'var(--accent-blue)' : 'var(--border-glass)'}`,
+                      transition: 'all 0.2s', position: 'relative'
                     }}>
-                      <div>
-                        <div style={{ color: '#e6edf3', fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <svg height="14" viewBox="0 0 16 16" fill="#8b949e">
-                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-                          </svg>
-                          {repo.repo_owner}/{repo.repo_name}
-                          {repo.is_active === 1 && (
-                            <span style={{ background: '#1f6feb', color: '#fff', borderRadius: 20, padding: '1px 8px', fontSize: 10 }}>Active</span>
-                          )}
-                        </div>
-                        <div style={{ color: '#8b949e', fontSize: 11, marginTop: 2 }}>
-                          Connected {new Date(repo.connected_at).toLocaleDateString()}
-                        </div>
+                      <div style={{ color: 'white', fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <svg height="16" viewBox="0 0 16 16" fill={repo.is_active ? '#60a5fa' : 'var(--text-muted)'}>
+                          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                        </svg>
+                        {repo.repo_owner}/{repo.repo_name}
                       </div>
-                      {!repo.is_active && (
-                        <button
-                          disabled={switching}
-                          onClick={() => handleSwitchRepo(repo)}
-                          style={{ background: '#238636', border: '1px solid #2ea043', color: '#fff', borderRadius: 6, padding: '5px 14px', cursor: switching ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 500 }}
-                        >
-                          {switching ? '...' : 'Switch →'}
-                        </button>
-                      )}
+                      <div style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 16 }}>
+                        Connected: {new Date(repo.connected_at).toLocaleDateString()}
+                      </div>
+                      
+                      <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'flex-end' }}>
+                        {repo.is_active ? (
+                          <span style={{ background: 'var(--accent-blue)', color: 'white', borderRadius: 20, padding: '4px 12px', fontSize: 12, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            ✓ Active Repository
+                          </span>
+                        ) : (
+                          <button
+                            disabled={switching}
+                            onClick={() => handleSwitchRepo(repo)}
+                            className="btn-premium"
+                            style={{ padding: '6px 16px', fontSize: 13, width: '100%' }}
+                          >
+                            {switching ? <div style={S.spinner} /> : 'Switch to this repo →'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -394,7 +389,7 @@ export default function GitHub() {
             </div>
 
             {/* Tabs */}
-            <div style={S.tabs}>
+            <div style={S.tabs} className="animate-in stagger-2">
               {[
                 { key: 'commits',  label: 'Commits',  count: commits.length,  icon: '⏱' },
                 { key: 'branches', label: 'Branches', count: branches.length, icon: '🌿' },
@@ -409,7 +404,7 @@ export default function GitHub() {
 
             {/* Commits */}
             {activeTab === 'commits' && (
-              <div style={S.card}>
+              <div className="glass-panel animate-in stagger-3">
                 {commits.length === 0
                   ? <div style={{ padding: 40, textAlign: 'center', color: '#8b949e' }}>No commits found</div>
                   : commits.map((c, i) => (
@@ -433,7 +428,7 @@ export default function GitHub() {
 
             {/* Branches */}
             {activeTab === 'branches' && (
-              <div style={S.card}>
+              <div className="glass-panel animate-in stagger-3">
                 {branches.map((b, i) => (
                   <div key={b.name} style={S.row(i === branches.length - 1)}
                     onMouseEnter={e => e.currentTarget.style.background = '#1c2128'}

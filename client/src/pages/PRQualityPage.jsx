@@ -29,23 +29,27 @@ function ScoreRing({ score }) {
 }
 
 function CategoryCard({ icon, title, rating, issues }) {
+  const color = RATING_COLORS[rating] || 'var(--border-glass)';
   return (
-    <div style={{
-      background: '#0d1117',
-      border: `1px solid ${RATING_COLORS[rating] || '#30363d'}33`,
-      borderLeft: `3px solid ${RATING_COLORS[rating] || '#30363d'}`,
-      borderRadius: 8, padding: '14px 16px',
+    <div className="glass-panel" style={{
+      background: 'rgba(255,255,255,0.02)',
+      border: `1px solid ${color}44`,
+      borderLeft: `4px solid ${color}`,
+      boxShadow: `inset 0 0 20px ${color}11`,
+      borderRadius: 12, padding: '18px 20px',
+      height: '100%',
+      transition: 'all 0.3s ease',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: issues?.length ? 10 : 0 }}>
-        <span style={{ fontWeight: 600, fontSize: 13, color: '#e6edf3' }}>{icon} {title}</span>
-        <span style={{ fontSize: 11, fontWeight: 600, color: RATING_COLORS[rating], background: RATING_COLORS[rating] + '22', borderRadius: 20, padding: '2px 10px' }}>
-          {rating?.toUpperCase()}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: issues?.length ? 14 : 0 }}>
+        <span style={{ fontWeight: 700, fontSize: 14, color: 'white' }}>{icon} {title}</span>
+        <span style={{ fontSize: 10, fontWeight: 800, color: 'white', background: color, borderRadius: 20, padding: '2px 12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          {rating}
         </span>
       </div>
       {issues?.length > 0 && (
-        <ul style={{ margin: 0, paddingLeft: 16 }}>
+        <ul style={{ margin: 0, paddingLeft: 18 }}>
           {issues.map((issue, i) => (
-            <li key={i} style={{ color: '#8b949e', fontSize: 13, lineHeight: 1.7 }}>{issue}</li>
+            <li key={i} style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.8, marginBottom: 4 }}>{issue}</li>
           ))}
         </ul>
       )}
@@ -76,19 +80,20 @@ export default function PRQualityPage() {
   const vStyle  = VERDICT_STYLES[verdict] || VERDICT_STYLES.NEEDS_REVIEW;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0d1117', color: '#e6edf3', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+    <div className="dark-page-bg">
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-      {/* Nav */}
-      <nav style={{ background: '#161b22', borderBottom: '1px solid #30363d', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', gap: 16, position: 'sticky', top: 0, zIndex: 100 }}>
-        <button onClick={() => navigate(`/project/${id}`)} style={{ background: 'transparent', border: '1px solid #30363d', color: '#8b949e', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 13 }}>← Back</button>
-        <span style={{ fontWeight: 600, fontSize: 15 }}>🔍 PR Quality Gate</span>
+      <nav className="d-flex justify-content-between align-items-center px-4" style={{ height: '72px', borderBottom: '1px solid var(--border-glass)', background: 'rgba(6,9,19,0.8)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div className="d-flex align-items-center gap-3">
+          <button className="btn-premium-outline py-1 px-3 mt-0" style={{ fontSize: '0.85rem' }} onClick={() => navigate(`/project/${id}`)}>← Back</button>
+          <span className="fw-bold text-white fs-5">PR Quality Gate</span>
+        </div>
       </nav>
 
-      <div style={{ maxWidth: 800, margin: '0 auto', padding: '32px 24px' }}>
+      <div style={{ maxWidth: 800, margin: '0 auto', padding: '32px 24px' }} className="animate-in">
 
         {/* Input card */}
-        <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 10, padding: '20px 24px', marginBottom: 24 }}>
+        <div className="glass-panel p-4 mb-4 animate-in stagger-1">
           <div style={{ fontSize: 14, fontWeight: 600, color: '#e6edf3', marginBottom: 4 }}>Paste a GitHub Pull Request URL</div>
           <div style={{ color: '#8b949e', fontSize: 12, marginBottom: 14 }}>AI will check code quality, security, missing tests, and breaking changes.</div>
           {error && (
@@ -100,7 +105,8 @@ export default function PRQualityPage() {
               onChange={e => setPrUrl(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleReview()}
               placeholder="https://github.com/owner/repo/pull/123"
-              style={{ flex: 1, background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', padding: '8px 12px', fontSize: 14, outline: 'none' }}
+              className="form-control"
+              style={{ flex: 1, padding: '8px 12px', fontSize: 14 }}
             />
             <button onClick={handleReview} disabled={loading || !prUrl.trim()} style={{
               background: loading || !prUrl.trim() ? '#21262d' : '#238636',
@@ -125,35 +131,41 @@ export default function PRQualityPage() {
         {result && (
           <>
             {/* Verdict */}
-            <div style={{ background: vStyle.bg, border: `1px solid ${vStyle.border}`, borderRadius: 10, padding: '20px 24px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-              <ScoreRing score={result.review.score} />
+            <div className="glass-panel mb-4 p-4 d-flex align-items-center gap-4 flex-wrap" style={{
+              background: `linear-gradient(135deg, ${vStyle.bg} 0%, rgba(2,6,23,0.8) 100%)`,
+              border: `1px solid ${vStyle.border}66`,
+              boxShadow: `0 0 30px ${vStyle.border}11`,
+            }}>
+              <ScoreRing score={result?.review?.score || 0} />
               <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <span style={{ fontSize: 18 }}>{vStyle.icon}</span>
-                  <span style={{ fontSize: 18, fontWeight: 700, color: vStyle.color }}>{verdict}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+                  <span style={{ fontSize: '1.5rem' }}>{vStyle.icon}</span>
+                  <span style={{ fontSize: 24, fontWeight: 900, color: vStyle.color, letterSpacing: '-0.02em' }}>{verdict || 'NEEDS REVIEW'}</span>
                 </div>
-                <div style={{ color: '#e6edf3', fontSize: 14, lineHeight: 1.6, marginBottom: 8 }}>{result.review.summary}</div>
-                <div style={{ color: '#8b949e', fontSize: 12 }}>
-                  PR: <strong style={{ color: '#58a6ff' }}>{result.pr_title}</strong> by {result.pr_author}
+                <div style={{ color: 'white', fontSize: 15, fontWeight: 500, lineHeight: 1.6, marginBottom: 12, opacity: 0.9 }}>{result?.review?.summary || 'No summary available.'}</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  PR: <strong style={{ color: 'var(--accent-blue)' }}>{result?.pr_title || 'Unknown'}</strong> <span style={{ mx: 1 }}>·</span> by {result?.pr_author || 'unknown'}
                 </div>
               </div>
             </div>
 
             {/* 4 categories */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-              <CategoryCard icon="⚙️" title="Code Quality"     rating={result.review.quality?.rating}          issues={result.review.quality?.issues} />
-              <CategoryCard icon="🧪" title="Test Coverage"    rating={result.review.tests?.rating}            issues={result.review.tests?.issues} />
-              <CategoryCard icon="🔒" title="Security"         rating={result.review.security?.rating}         issues={result.review.security?.issues} />
-              <CategoryCard icon="💥" title="Breaking Changes" rating={result.review.breaking_changes?.rating}  issues={result.review.breaking_changes?.issues} />
+              <CategoryCard icon="⚙️" title="Code Quality"     rating={result?.review?.quality?.rating}          issues={result?.review?.quality?.issues} />
+              <CategoryCard icon="🧪" title="Test Coverage"    rating={result?.review?.tests?.rating}            issues={result?.review?.tests?.issues} />
+              <CategoryCard icon="🔒" title="Security"         rating={result?.review?.security?.rating}         issues={result?.review?.security?.issues} />
+              <CategoryCard icon="💥" title="Breaking Changes" rating={result?.review?.breaking_changes?.rating}  issues={result?.review?.breaking_changes?.issues} />
             </div>
 
             {/* Recommendations */}
             {result.review.recommendations?.length > 0 && (
-              <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 10, padding: '16px 20px', marginBottom: 20 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#e6edf3', marginBottom: 12 }}>📋 Recommendations</div>
-                <ol style={{ margin: 0, paddingLeft: 20 }}>
+              <div className="glass-panel p-4 mb-4">
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <span>📋</span> Recommendations
+                </div>
+                <ol style={{ margin: 0, paddingLeft: 22 }}>
                   {result.review.recommendations.map((r, i) => (
-                    <li key={i} style={{ color: '#c9d1d9', fontSize: 13, lineHeight: 1.8 }}>{r}</li>
+                    <li key={i} style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.8, marginBottom: 8 }}>{r}</li>
                   ))}
                 </ol>
               </div>
@@ -161,11 +173,11 @@ export default function PRQualityPage() {
 
             {/* Files */}
             {result.files?.length > 0 && (
-              <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 10, padding: '16px 20px' }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#e6edf3', marginBottom: 10 }}>📁 Files Changed ({result.files.length})</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              <div className="glass-panel p-4">
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 14 }}>📁 Files Changed ({result.files.length})</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {result.files.map((f, i) => (
-                    <span key={i} style={{ background: '#21262d', border: '1px solid #30363d', borderRadius: 4, padding: '3px 8px', fontSize: 11, color: '#e6edf3', fontFamily: 'monospace' }}>{f}</span>
+                    <span key={i} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', borderRadius: 6, padding: '5px 12px', fontSize: 12, color: 'var(--accent-blue)', fontFamily: 'monospace', fontWeight: 500 }}>{f}</span>
                   ))}
                 </div>
               </div>

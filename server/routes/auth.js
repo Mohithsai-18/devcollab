@@ -53,15 +53,15 @@ router.put('/profile', authMiddleware, updateProfile);
 router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
 
 router.get('/github/callback',
-  passport.authenticate('github', { failureRedirect: 'http://localhost:3000/login' }),
+  passport.authenticate('github', { failureRedirect: `${process.env.CLIENT_URL}/login` }),
   async (req, res) => {
     try {
       const user = req.user;
       const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '365d' });
       // Redirect to frontend with token
-      res.redirect(`http://localhost:3000/auth/github/success?token=${token}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&role=${user.role}&id=${user.id}`);
+      res.redirect(`${process.env.CLIENT_URL}/auth/github/success?token=${token}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&role=${user.role}&id=${user.id}`);
     } catch (err) {
-      res.redirect('http://localhost:3000/login');
+      res.redirect(`${process.env.CLIENT_URL}/login`);
     }
   }
 );

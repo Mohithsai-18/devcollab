@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTheme } from '../context/ThemeContext';
 import api from '../utils/api';
 
 function Members() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
   const [project, setProject] = useState(null);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,11 +14,7 @@ function Members() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    fetchProject();
-  }, [id]);
-
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     try {
       const res = await api.get(`/projects/${id}`);
       setProject(res.data);
@@ -30,7 +24,11 @@ function Members() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchProject();
+  }, [fetchProject]);
 
   const handleAddMember = async (e) => {
     e.preventDefault();
@@ -77,19 +75,19 @@ function Members() {
   );
 
   return (
-    <div className="min-vh-100 bg-body">
+    <div className="dark-page-bg">
 
       {/* Navbar */}
-      <nav className="navbar navbar-dark bg-primary px-4">
+      <nav className="d-flex justify-content-between align-items-center px-4" style={{ height: '72px', borderBottom: '1px solid var(--border-glass)', background: 'rgba(6,9,19,0.8)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div className="d-flex align-items-center gap-3">
-
           <button
-            className="btn btn-outline-light btn-sm"
+            className="btn-premium-outline py-1 px-3 mt-0"
+            style={{ fontSize: '0.85rem' }}
             onClick={() => navigate(`/project/${id}`)}
           >
             ← Back
           </button>
-          <span className="navbar-brand fw-bold mb-0">
+          <span className="fw-bold text-white fs-5">
             Team Members — {project?.name}
           </span>
         </div>
@@ -98,9 +96,9 @@ function Members() {
       <div className="container mt-4" style={{ maxWidth: '800px' }}>
 
         {/* Add Member Card */}
-        <div className="card border-0 shadow-sm mb-4">
-          <div className="card-header bg-white">
-            <h6 className="fw-bold mb-0">➕ Add Team Member</h6>
+        <div className="glass-panel mb-4 p-0 overflow-hidden">
+          <div className="p-3" style={{ borderBottom: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.03)' }}>
+            <h6 className="fw-bold mb-0 text-white">➕ Add Team Member</h6>
           </div>
           <div className="card-body">
             {error && (
@@ -155,10 +153,10 @@ function Members() {
         </div>
 
         {/* Members List */}
-        <div className="card border-0 shadow-sm">
-          <div className="card-header bg-white d-flex justify-content-between">
-            <h6 className="fw-bold mb-0">👥 Team Members</h6>
-            <span className="badge bg-primary">{members.length} members</span>
+        <div className="glass-panel p-0 overflow-hidden">
+          <div className="p-3 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.03)' }}>
+            <h6 className="fw-bold mb-0 text-white">👥 Team Members</h6>
+            <span className="badge" style={{ background: 'rgba(59,130,246,0.15)', color: '#60a5fa' }}>{members.length} members</span>
           </div>
           <div className="card-body p-0">
             {members.length === 0 ? (
@@ -200,9 +198,9 @@ function Members() {
         </div>
 
         {/* Role Legend */}
-        <div className="card border-0 shadow-sm mt-4">
-          <div className="card-header bg-white">
-            <h6 className="fw-bold mb-0">📋 Role Permissions</h6>
+        <div className="glass-panel mt-4 p-0 overflow-hidden">
+          <div className="p-3" style={{ borderBottom: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.03)' }}>
+            <h6 className="fw-bold mb-0 text-white">📋 Role Permissions</h6>
           </div>
           <div className="card-body">
             <div className="row">

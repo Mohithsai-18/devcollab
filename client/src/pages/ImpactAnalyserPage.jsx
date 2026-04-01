@@ -42,19 +42,20 @@ export default function ImpactAnalyserPage() {
   const filtered  = repoFiles.filter(f => filePath && f.toLowerCase().includes(filePath.toLowerCase()));
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0d1117', color: '#e6edf3', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+    <div className="dark-page-bg">
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-      {/* Nav */}
-      <nav style={{ background: '#161b22', borderBottom: '1px solid #30363d', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', gap: 16, position: 'sticky', top: 0, zIndex: 100 }}>
-        <button onClick={() => navigate(`/project/${id}`)} style={{ background: 'transparent', border: '1px solid #30363d', color: '#8b949e', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 13 }}>← Back</button>
-        <span style={{ fontWeight: 600, fontSize: 15 }}>💥 Impact Analyser</span>
+      <nav className="d-flex justify-content-between align-items-center px-4" style={{ height: '72px', borderBottom: '1px solid var(--border-glass)', background: 'rgba(6,9,19,0.8)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div className="d-flex align-items-center gap-3">
+          <button className="btn-premium-outline py-1 px-3 mt-0" style={{ fontSize: '0.85rem' }} onClick={() => navigate(`/project/${id}`)}>← Back</button>
+          <span className="fw-bold text-white fs-5">Impact Analyser</span>
+        </div>
       </nav>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px' }} className="animate-in">
 
         {/* Input */}
-        <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 10, padding: '20px 24px', marginBottom: 24 }}>
+        <div className="glass-panel p-4 mb-4 animate-in stagger-1">
           <div style={{ fontSize: 14, fontWeight: 600, color: '#e6edf3', marginBottom: 4 }}>Enter a file path to analyse its impact</div>
           <div style={{ color: '#8b949e', fontSize: 12, marginBottom: 14 }}>
             AI will show which tasks are affected and which other files might break if this file changes.
@@ -71,7 +72,8 @@ export default function ImpactAnalyserPage() {
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 onKeyDown={e => e.key === 'Enter' && handleAnalyse()}
                 placeholder="e.g. server/controllers/authController.js"
-                style={{ flex: 1, background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'monospace' }}
+                className="form-control"
+                style={{ flex: 1, padding: '8px 12px', fontSize: 13, fontFamily: 'monospace' }}
               />
               <button onClick={handleAnalyse} disabled={loading || !filePath.trim()} style={{
                 background: loading || !filePath.trim() ? '#21262d' : '#1f6feb',
@@ -93,13 +95,16 @@ export default function ImpactAnalyserPage() {
 
             {/* Autocomplete */}
             {showSuggestions && filtered.length > 0 && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 80, background: '#161b22', border: '1px solid #30363d', borderRadius: 6, zIndex: 10, maxHeight: 200, overflowY: 'auto', marginTop: 4 }}>
+              <div className="glass-panel p-1 position-absolute w-100 mt-1 shadow-lg" style={{ top: '100%', zIndex: 100, maxHeight: 200, overflowY: 'auto', background: 'rgba(6,9,19,0.95)', backdropFilter: 'blur(20px)' }}>
                 {filtered.slice(0, 8).map((f, i) => (
                   <div key={i} onClick={() => { setFilePath(f); setShowSuggestions(false); }}
-                    style={{ padding: '8px 12px', cursor: 'pointer', fontSize: 12, fontFamily: 'monospace', color: '#e6edf3', borderBottom: '1px solid #21262d' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#1c2128'}
+                    className="p-2 px-3 rounded-2"
+                    style={{ cursor: 'pointer', fontSize: 13, fontFamily: 'monospace', color: 'var(--text-main)', transition: 'background 0.2s ease' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                  >{f}</div>
+                  >
+                    <span className="text-muted mr-2">📄</span> {f}
+                  </div>
                 ))}
               </div>
             )}
@@ -110,66 +115,79 @@ export default function ImpactAnalyserPage() {
         {result && (
           <>
             {/* Risk summary */}
-            <div style={{ background: riskStyle.bg, border: `1px solid ${riskStyle.border}`, borderRadius: 10, padding: '20px 24px', marginBottom: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <span style={{ fontSize: 20 }}>
-                  {result.impact.risk_level === 'high' ? '🔴' : result.impact.risk_level === 'medium' ? '🟡' : '🟢'}
+            {/* Risk summary */}
+            <div className="glass-panel mb-4 p-4" style={{
+              background: `linear-gradient(135deg, ${riskStyle.bg} 0%, rgba(2,6,23,0.8) 100%)`,
+              border: `1px solid ${riskStyle.border}66`,
+              boxShadow: `0 0 30px ${riskStyle.border}11`,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                <span style={{ fontSize: '1.5rem' }}>
+                  {result?.impact?.risk_level === 'high' ? '🔴' : result?.impact?.risk_level === 'medium' ? '🟡' : '🟢'}
                 </span>
-                <span style={{ fontWeight: 700, fontSize: 16, color: riskStyle.color }}>
-                  {result.impact.risk_level?.toUpperCase()} RISK
+                <span style={{ fontWeight: 900, fontSize: 20, color: riskStyle.color, letterSpacing: '-0.02em' }}>
+                  {(result?.impact?.risk_level || 'low').toUpperCase()} RISK
                 </span>
-                <code style={{ background: '#21262d', border: '1px solid #30363d', borderRadius: 4, padding: '2px 8px', fontSize: 12, color: '#8b949e', marginLeft: 'auto' }}>
-                  {result.file_path}
+                <code style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-glass)', borderRadius: 6, padding: '4px 12px', fontSize: 13, color: 'var(--accent-blue)', marginLeft: 'auto' }}>
+                  {result?.file_path}
                 </code>
               </div>
-              <div style={{ color: '#c9d1d9', fontSize: 14, lineHeight: 1.7 }}>{result.impact.summary}</div>
+              <div style={{ color: 'white', fontSize: 15, lineHeight: 1.8, opacity: 0.9, fontWeight: 500 }}>{result?.impact?.summary || 'No impact summary available.'}</div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
 
               {/* Affected tasks */}
-              <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 10, padding: '16px 20px' }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#e6edf3', marginBottom: 12 }}>
-                  🎫 Affected Tasks ({result.impact.affected_tasks?.length || 0})
+              {/* Affected tasks */}
+              <div className="glass-panel p-4">
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <span>🎫</span> Affected Tasks ({result?.impact?.affected_tasks?.length || 0})
                 </div>
-                {!result.impact.affected_tasks?.length ? (
-                  <div style={{ color: '#8b949e', fontSize: 13 }}>No tasks directly affected.</div>
+                {!result?.impact?.affected_tasks?.length ? (
+                  <div style={{ color: 'var(--text-muted)', fontSize: 13, fontStyle: 'italic', textAlign: 'center', padding: '20px 0' }}>No tasks directly affected.</div>
                 ) : result.impact.affected_tasks.map((t, i) => (
-                  <div key={i} style={{ background: '#0d1117', border: '1px solid #21262d', borderRadius: 6, padding: '10px 12px', marginBottom: 8 }}>
-                    <div style={{ fontWeight: 500, fontSize: 13, color: '#e6edf3', marginBottom: 4 }}>{t.task_title}</div>
-                    <div style={{ fontSize: 12, color: '#8b949e' }}>{t.reason}</div>
+                  <div key={i} className="p-3 rounded-3 mb-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)' }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: 'white', marginBottom: 6 }}>{t.task_title}</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>{t.reason}</div>
                   </div>
                 ))}
               </div>
 
               {/* Affected files */}
-              <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 10, padding: '16px 20px' }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#e6edf3', marginBottom: 12 }}>
-                  📁 Files That Might Break ({result.impact.affected_files?.length || 0})
+              {/* Affected files */}
+              <div className="glass-panel p-4">
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <span>📁</span> Files at Risk ({result?.impact?.affected_files?.length || 0})
                 </div>
-                {!result.impact.affected_files?.length ? (
-                  <div style={{ color: '#8b949e', fontSize: 13 }}>No files at risk.</div>
+                {!result?.impact?.affected_files?.length ? (
+                  <div style={{ color: 'var(--text-muted)', fontSize: 13, fontStyle: 'italic', textAlign: 'center', padding: '20px 0' }}>No dependencies at risk.</div>
                 ) : result.impact.affected_files.map((f, i) => (
-                  <div key={i} style={{ background: '#0d1117', border: `1px solid ${RISK_STYLES[f.risk]?.border || '#30363d'}33`, borderLeft: `3px solid ${RISK_STYLES[f.risk]?.border || '#30363d'}`, borderRadius: 6, padding: '10px 12px', marginBottom: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <code style={{ fontSize: 11, color: '#e6edf3' }}>{f.file}</code>
-                      <span style={{ fontSize: 10, color: RISK_STYLES[f.risk]?.color, background: RISK_STYLES[f.risk]?.bg, borderRadius: 20, padding: '1px 8px', fontWeight: 600 }}>
-                        {f.risk?.toUpperCase()}
+                  <div key={i} className="p-3 rounded-3 mb-3" style={{
+                    background: 'rgba(255,255,255,0.02)',
+                    border: `1px solid ${RISK_STYLES[f.risk]?.border || 'var(--border-glass)'}44`,
+                    borderLeft: `4px solid ${RISK_STYLES[f.risk]?.border || 'var(--border-glass)'}`,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <code style={{ fontSize: 12, color: 'var(--accent-blue)', fontWeight: 600 }}>{f.file}</code>
+                      <span style={{ fontSize: 10, color: 'white', background: RISK_STYLES[f.risk]?.color, borderRadius: 20, padding: '2px 10px', fontWeight: 800, textTransform: 'uppercase' }}>
+                        {f.risk}
                       </span>
                     </div>
-                    <div style={{ fontSize: 12, color: '#8b949e' }}>{f.reason}</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>{f.reason}</div>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Recommendations */}
-            {result.impact.recommendations?.length > 0 && (
-              <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 10, padding: '16px 20px' }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#e6edf3', marginBottom: 10 }}>📋 Recommendations</div>
-                <ol style={{ margin: 0, paddingLeft: 20 }}>
+            {result?.impact?.recommendations?.length > 0 && (
+              <div className="glass-panel p-4">
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <span>📋</span> Recommendations
+                </div>
+                <ol style={{ margin: 0, paddingLeft: 22 }}>
                   {result.impact.recommendations.map((r, i) => (
-                    <li key={i} style={{ color: '#c9d1d9', fontSize: 13, lineHeight: 1.8 }}>{r}</li>
+                    <li key={i} style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.8, marginBottom: 8 }}>{r}</li>
                   ))}
                 </ol>
               </div>

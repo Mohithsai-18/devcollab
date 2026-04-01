@@ -92,20 +92,20 @@ function ImportFromGitHub() {
   };
 
   return (
-    <div className="min-vh-100 bg-body">
+    <div className="dark-page-bg">
 
       {/* Navbar */}
-      <nav className="navbar navbar-dark bg-primary px-4">
+      <nav className="d-flex justify-content-between align-items-center px-4" style={{ height: '72px', borderBottom: '1px solid var(--border-glass)', background: 'rgba(6,9,19,0.8)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div className="d-flex align-items-center gap-3">
-          <button className="btn btn-outline-light btn-sm" onClick={() => navigate('/dashboard')}>
-            ← Back to Dashboard
+          <button className="btn-premium-outline py-1 px-3 mt-0" style={{ fontSize: '0.85rem' }} onClick={() => navigate('/dashboard')}>
+            ← Back
           </button>
-          <span className="navbar-brand fw-bold mb-0">
+          <span className="fw-bold text-white fs-5">
             🐙 Import from GitHub
           </span>
         </div>
         {imported.length > 0 && (
-          <button className="btn btn-success btn-sm" onClick={() => navigate('/dashboard')}>
+          <button className="btn btn-success btn-sm mt-0" onClick={() => navigate('/dashboard')}>
             ✓ {imported.length} imported — Go to Dashboard
           </button>
         )}
@@ -115,7 +115,7 @@ function ImportFromGitHub() {
 
         {/* Token Section */}
         {repos.length === 0 ? (
-          <div className="card border-0 shadow-sm p-4 mb-4">
+          <div className="glass-panel p-5 mb-4 border-0">
             <div className="text-center mb-4">
               <div style={{ fontSize: '50px' }}>🐙</div>
               <h4 className="fw-bold mt-2">Import GitHub Repositories</h4>
@@ -195,7 +195,7 @@ function ImportFromGitHub() {
             </div>
 
             {/* Search and Filter */}
-            <div className="card border-0 shadow-sm p-3 mb-3">
+            <div className="glass-panel p-3 mb-3 border-0">
               <div className="row g-2">
                 <div className="col-md-8">
                   <div className="input-group">
@@ -232,7 +232,7 @@ function ImportFromGitHub() {
             </div>
 
             {/* Repo List */}
-            <div className="card border-0 shadow-sm">
+            <div className="glass-panel p-0 overflow-hidden border-0">
               <div className="card-body p-0">
                 {filteredRepos.length === 0 ? (
                   <div className="text-center py-5 text-muted">
@@ -246,6 +246,7 @@ function ImportFromGitHub() {
                       <div
                         key={repo.full_name}
                         className={`d-flex align-items-center justify-content-between p-4 ${i !== filteredRepos.length - 1 ? 'border-bottom' : ''} ${isImported ? 'bg-success bg-opacity-10' : ''}`}
+                        style={{ borderColor: 'var(--border-glass) !important' }}
                       >
                         <div className="flex-grow-1">
                           <div className="d-flex align-items-center gap-2 mb-1">

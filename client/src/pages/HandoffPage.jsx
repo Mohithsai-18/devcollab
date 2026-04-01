@@ -18,10 +18,11 @@ const STATUS_COLORS = {
 
 function Section({ icon, title, color, children }) {
   return (
-    <div style={{
-      background: '#0d1117', border: `1px solid ${color}33`,
-      borderLeft: `3px solid ${color}`, borderRadius: 8,
-      padding: '14px 18px', marginBottom: 12,
+    <div className="glass-panel" style={{
+      background: 'rgba(255,255,255,0.02)', border: `1px solid ${color}44`,
+      borderLeft: `4px solid ${color}`, borderRadius: 12,
+      padding: '16px 20px', marginBottom: 16,
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
     }}>
       <div style={{ fontSize: 12, fontWeight: 600, color, marginBottom: 8, letterSpacing: '0.05em' }}>
         {icon} {title}
@@ -38,11 +39,10 @@ function HandoffCard({ h, expanded, onToggle }) {
   })();
 
   return (
-    <div style={{
-      background: '#161b22', border: '1px solid #30363d', borderRadius: 10,
-      marginBottom: 16, overflow: 'hidden',
-      boxShadow: expanded ? '0 0 0 2px #1f6feb44' : 'none',
-      transition: 'box-shadow .2s',
+    <div className="glass-panel p-0 overflow-hidden mb-4" style={{
+      boxShadow: expanded ? `0 0 25px ${h?.task_status && STATUS_COLORS[h.task_status] ? STATUS_COLORS[h.task_status] + '22' : 'rgba(31,111,235,0.15)'}` : 'none',
+      transition: 'all .3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transform: expanded ? 'scale(1.01)' : 'scale(1)',
     }}>
       <div onClick={onToggle} style={{ padding: '16px 20px', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -58,9 +58,9 @@ function HandoffCard({ h, expanded, onToggle }) {
                 🎫 {h.task_title}
               </span>
             )}
-            {h.task_status && (
-              <span style={{ background: STATUS_COLORS[h.task_status] + '22', border: `1px solid ${STATUS_COLORS[h.task_status]}`, borderRadius: 20, padding: '2px 10px', fontSize: 11, color: STATUS_COLORS[h.task_status] }}>
-                {h.task_status?.replace('_', ' ')}
+            {h?.task_status && (
+              <span style={{ background: (STATUS_COLORS[h.task_status] || '#6c757d') + '22', border: `1px solid ${STATUS_COLORS[h.task_status] || '#6c757d'}`, borderRadius: 20, padding: '2px 10px', fontSize: 11, color: STATUS_COLORS[h.task_status] || '#6c757d' }}>
+                {h.task_status.replace('_', ' ')}
               </span>
             )}
           </div>
@@ -74,10 +74,10 @@ function HandoffCard({ h, expanded, onToggle }) {
       </div>
 
       {h.brief && !expanded && (
-        <div style={{ margin: '0 20px 16px', padding: '12px 14px', background: '#0d1117', border: '1px solid #1f6feb33', borderLeft: '3px solid #1f6feb', borderRadius: 6 }}>
-          <div style={{ fontSize: 11, color: '#58a6ff', fontWeight: 600, marginBottom: 6, letterSpacing: '0.05em' }}>📋 CONTINUATION BRIEF</div>
-          <div style={{ color: '#c9d1d9', fontSize: 13, lineHeight: 1.6 }}>{h.brief}</div>
-        </div>
+          <div style={{ margin: '0 20px 16px', padding: '14px 18px', background: 'rgba(31,111,235,0.05)', border: '1px solid rgba(31,111,235,0.2)', borderLeft: '4px solid #1f6feb', borderRadius: 10 }}>
+            <div style={{ fontSize: 11, color: '#58a6ff', fontWeight: 700, marginBottom: 8, letterSpacing: '0.1em', textTransform: 'uppercase' }}>📋 Continuation Brief</div>
+            <div style={{ color: '#e6edf3', fontSize: 13, lineHeight: 1.7, opacity: 0.9 }}>{h.brief}</div>
+          </div>
       )}
 
       {expanded && (
@@ -133,39 +133,36 @@ function ManualSync({ projectId, onSynced }) {
   };
 
   return (
-    <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 10, padding: '18px 20px', marginBottom: 24 }}>
-      <div style={{ fontSize: 13, fontWeight: 600, color: '#e6edf3', marginBottom: 12 }}>
-        🔄 Manual Sync — Generate brief from a specific commit
+    <div className="glass-panel p-4 mb-4" style={{ background: 'rgba(255,255,255,0.02)' }}>
+      <div className="d-flex align-items-center gap-2 mb-3">
+        <span style={{ fontSize: '1.2rem' }}>🔄</span>
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>
+          Manual Sync
+          <small className="d-block text-muted fw-normal" style={{ fontSize: '11px' }}>Generate brief from a specific commit SHA</small>
+        </div>
       </div>
       {error && (
-        <div style={{ background: '#1a0a0a', border: '1px solid #f85149', color: '#f85149', borderRadius: 6, padding: '8px 12px', fontSize: 13, marginBottom: 10 }}>
+        <div className="alert alert-danger py-2 px-3 mb-3" style={{ fontSize: '13px', background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.2)', color: '#ff6b6b' }}>
           {error}
         </div>
       )}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <div className="d-flex gap-2 flex-wrap">
         <input value={sha} onChange={e => setSha(e.target.value)}
-          placeholder="Commit SHA (full or short)"
-          style={{ flex: 2, minWidth: 200, background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', padding: '8px 12px', fontSize: 13, outline: 'none', fontFamily: 'monospace' }}
+          placeholder="Commit SHA..."
+          className="form-control"
+          style={{ flex: 2, minWidth: 200, fontSize: 13, fontFamily: 'monospace' }}
         />
         <input value={branch} onChange={e => setBranch(e.target.value)}
-          placeholder="Branch (optional)"
-          style={{ flex: 1, minWidth: 140, background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', padding: '8px 12px', fontSize: 13, outline: 'none' }}
+          placeholder="Branch (opt)"
+          className="form-control"
+          style={{ flex: 1, minWidth: 120, fontSize: 13 }}
         />
-        <button onClick={handleSync} disabled={!sha.trim() || syncing}
-          style={{
-            background: !sha.trim() || syncing ? '#21262d' : '#238636',
-            border: `1px solid ${!sha.trim() || syncing ? '#30363d' : '#2ea043'}`,
-            color: !sha.trim() || syncing ? '#484f58' : '#fff',
-            borderRadius: 6, padding: '8px 18px',
-            cursor: !sha.trim() || syncing ? 'not-allowed' : 'pointer',
-            fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap',
-          }}
-        >
-          {syncing ? '⟳ Generating...' : '⚡ Generate Brief'}
+        <button className="btn-premium py-1 px-4 mt-0" onClick={handleSync} disabled={!sha.trim() || syncing} style={{ fontSize: '13px' }}>
+          {syncing ? 'Generating...' : '⚡ Generate'}
         </button>
       </div>
-      <div style={{ color: '#8b949e', fontSize: 12, marginTop: 8 }}>
-        Tip: copy the SHA from your terminal after <code style={{ background: '#21262d', padding: '1px 5px', borderRadius: 3 }}>git push</code> or from the GitHub commits page.
+      <div style={{ color: '#8b949e', fontSize: 12, marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.05)', pt: 2 }}>
+        Tip: copy the SHA from your terminal after <code style={{ background: 'rgba(255,255,255,0.05)', padding: '1px 5px', borderRadius: 3 }}>git push</code> or from GitHub.
       </div>
     </div>
   );
@@ -202,30 +199,27 @@ export default function HandoffPage() {
   });
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0d1117', color: '#e6edf3', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', fontSize: 14 }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}} ::-webkit-scrollbar{width:8px} ::-webkit-scrollbar-track{background:#161b22} ::-webkit-scrollbar-thumb{background:#30363d;border-radius:4px}`}</style>
+    <div className="dark-page-bg">
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
-      <nav style={{ background: '#161b22', borderBottom: '1px solid #30363d', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button onClick={() => navigate(`/project/${id}`)}
-            style={{ background: 'transparent', border: '1px solid #30363d', color: '#8b949e', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 13 }}>
-            ← Back
-          </button>
-          <div style={{ fontWeight: 600, fontSize: 15 }}>🤖 AI Handoff Briefs</div>
+      <nav className="d-flex justify-content-between align-items-center px-4" style={{ height: '72px', borderBottom: '1px solid var(--border-glass)', background: 'rgba(6,9,19,0.8)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div className="d-flex align-items-center gap-3">
+          <button className="btn-premium-outline py-1 px-3 mt-0" style={{ fontSize: '0.85rem' }} onClick={() => navigate(`/project/${id}`)}>← Back</button>
+          <span className="fw-bold text-white fs-5">AI Handoff Briefs</span>
         </div>
-        <span style={{ color: '#8b949e', fontSize: 12 }}>{handoffs.length} brief{handoffs.length !== 1 ? 's' : ''}</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{handoffs.length} brief{handoffs.length !== 1 ? 's' : ''}</span>
       </nav>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 24px' }} className="animate-in">
 
-        <div style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 10, padding: '16px 20px', marginBottom: 24, display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+        <div className="glass-panel p-4 mb-4 animate-in stagger-1 d-flex align-items-start gap-3">
           <div style={{ fontSize: 24, flexShrink: 0 }}>⚡</div>
           <div>
             <div style={{ fontWeight: 600, color: '#e6edf3', marginBottom: 4 }}>Automatic webhook setup</div>
             <div style={{ color: '#8b949e', fontSize: 13, lineHeight: 1.7 }}>
               Go to your GitHub repo → <strong style={{ color: '#e6edf3' }}>Settings → Webhooks → Add webhook</strong><br />
               Payload URL: <code style={{ background: '#21262d', padding: '2px 6px', borderRadius: 4, color: '#58a6ff' }}>
-                http://localhost:5000/api/handoff/webhook
+                {process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/handoff/webhook
               </code><br />
               Content type: <code style={{ background: '#21262d', padding: '2px 6px', borderRadius: 4 }}>application/json</code> · Events: <strong style={{ color: '#e6edf3' }}>Just the push event</strong>
             </div>
@@ -234,19 +228,20 @@ export default function HandoffPage() {
 
         <ManualSync projectId={id} onSynced={handleSynced} />
 
-        <div style={{ display: 'flex', marginBottom: 20, borderBottom: '1px solid #30363d' }}>
+        <div className="d-flex mb-4 gap-2" style={{ borderBottom: '1px solid var(--border-glass)' }}>
           {[
-            { key: 'all',      label: `All (${handoffs.length})` },
-            { key: 'linked',   label: `Linked to task (${handoffs.filter(h => h.task_id).length})` },
-            { key: 'unlinked', label: `Unlinked (${handoffs.filter(h => !h.task_id).length})` },
+            { key: 'all',      label: `All` },
+            { key: 'linked',   label: `Linked` },
+            { key: 'unlinked', label: `Unlinked` },
           ].map(t => (
             <button key={t.key} onClick={() => setFilter(t.key)} style={{
               background: 'transparent', border: 'none',
-              borderBottom: filter === t.key ? '2px solid #f78166' : '2px solid transparent',
-              color: filter === t.key ? '#e6edf3' : '#8b949e',
-              padding: '10px 16px', cursor: 'pointer', fontSize: 13,
-              fontWeight: filter === t.key ? 500 : 400,
-            }}>{t.label}</button>
+              borderBottom: filter === t.key ? '3px solid var(--accent-blue)' : '3px solid transparent',
+              color: filter === t.key ? 'white' : 'var(--text-muted)',
+              padding: '12px 20px', cursor: 'pointer', fontSize: 13,
+              fontWeight: filter === t.key ? 700 : 500,
+              transition: 'all 0.2s ease',
+            }}>{t.label} <span className="badge ms-1" style={{ background: 'rgba(255,255,255,0.1)', fontWeight: 400 }}>{t.key === 'all' ? handoffs.length : t.key === 'linked' ? handoffs.filter(h => h.task_id).length : handoffs.filter(h => !h.task_id).length}</span></button>
           ))}
         </div>
 

@@ -110,11 +110,7 @@ export default function AIChatPage() {
   const st = statusColors[indexStatus.status] || statusColors.idle;
 
   return (
-    <div style={{
-      minHeight: '100vh', background: '#0d1117', color: '#e6edf3',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      display: 'flex', flexDirection: 'column',
-    }}>
+    <div className="dark-page-bg" style={{ display: 'flex', flexDirection: 'column' }}>
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
         @keyframes spin  { to{transform:rotate(360deg)} }
@@ -122,52 +118,51 @@ export default function AIChatPage() {
       `}</style>
 
       {/* Nav */}
-      <nav style={{ background: '#161b22', borderBottom: '1px solid #30363d', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button onClick={() => navigate(`/project/${id}`)} style={{ background: 'transparent', border: '1px solid #30363d', color: '#8b949e', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 13 }}>← Back</button>
-          <span style={{ fontWeight: 600, fontSize: 15 }}>🧠 AI Project Chat</span>
+      <nav className="d-flex justify-content-between align-items-center px-4" style={{ height: '72px', borderBottom: '1px solid var(--border-glass)', background: 'rgba(6,9,19,0.8)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div className="d-flex align-items-center gap-3">
+          <button className="btn-premium-outline py-1 px-3 mt-0" style={{ fontSize: '0.85rem' }} onClick={() => navigate(`/project/${id}`)}>← Back</button>
+          <span className="fw-bold text-white fs-5">AI Project Companion</span>
           {/* Index Status Badge */}
           <span style={{
             background: st.bg, color: st.text, fontSize: 11, fontWeight: 600,
-            padding: '3px 10px', borderRadius: 12, letterSpacing: '0.03em',
+            padding: '4px 12px', borderRadius: 20, letterSpacing: '0.03em',
             animation: indexStatus.status === 'indexing' ? 'pulse 1.5s infinite' : 'none',
+            border: `1px solid ${st.text}33`
           }}>
             {st.label} {indexStatus.docs_indexed > 0 ? `(${indexStatus.docs_indexed} chunks)` : ''}
           </span>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {/* Index Button */}
+        <div className="d-flex gap-2 align-items-center">
           <button
             onClick={handleIndex}
             disabled={indexing}
             style={{
-              background: indexing ? '#21262d' : 'linear-gradient(135deg, #238636, #2ea043)',
-              border: '1px solid #2ea043',
-              color: indexing ? '#484f58' : '#fff',
-              borderRadius: 6, padding: '5px 14px', cursor: indexing ? 'not-allowed' : 'pointer',
-              fontSize: 12, fontWeight: 600,
-              transition: 'all 0.2s ease',
+              background: indexing ? 'rgba(59,130,246,0.1)' : 'rgba(16,185,129,0.1)',
+              border: indexing ? '1px solid rgba(59,130,246,0.2)' : '1px solid rgba(16,185,129,0.2)',
+              color: indexing ? '#60a5fa' : '#34d399',
+              borderRadius: 8, padding: '7px 14px', cursor: indexing ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 600
             }}
           >
             {indexing ? '⏳ Indexing...' : '🔄 Index Project'}
           </button>
           <button
             onClick={() => setShowFileInput(!showFileInput)}
-            style={{ background: showFileInput ? '#1c2d3a' : 'transparent', border: '1px solid #30363d', color: '#8b949e', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12 }}
+            className="btn-premium-outline py-2 px-3 mt-0" style={{ fontSize: '0.8rem' }}
           >
-            📁 {filePath || 'Focus on a file'}
+            📁 {filePath || 'Context File'}
           </button>
         </div>
       </nav>
 
       {/* File path input */}
       {showFileInput && (
-        <div style={{ background: '#161b22', borderBottom: '1px solid #30363d', padding: '10px 24px', display: 'flex', gap: 8 }}>
+        <div style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border-glass)', padding: '10px 24px', display: 'flex', gap: 8 }}>
           <input
             value={filePath}
             onChange={e => setFilePath(e.target.value)}
             placeholder="e.g. client/src/pages/ProjectView.jsx"
-            style={{ flex: 1, background: '#0d1117', border: '1px solid #30363d', borderRadius: 6, color: '#e6edf3', padding: '7px 12px', fontSize: 13, outline: 'none', fontFamily: 'monospace' }}
+            className="form-control"
+            style={{ flex: 1, padding: '7px 12px', fontSize: 13, fontFamily: 'monospace' }}
           />
           <button onClick={() => { setFilePath(''); setShowFileInput(false); }} style={{ background: '#21262d', border: '1px solid #30363d', color: '#e6edf3', borderRadius: 6, padding: '7px 12px', cursor: 'pointer', fontSize: 12 }}>
             Clear
@@ -176,7 +171,7 @@ export default function AIChatPage() {
       )}
 
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px', maxWidth: 800, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
+      <div className="animate-in" style={{ flex: 1, overflowY: 'auto', padding: '24px', maxWidth: 800, width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
 
         {/* Suggestions */}
         {messages.length === 1 && (
@@ -185,9 +180,9 @@ export default function AIChatPage() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {suggestions.map((s, i) => (
                 <button key={i} onClick={() => send(s)}
-                  style={{ background: '#161b22', border: '1px solid #30363d', color: '#8b949e', borderRadius: 20, padding: '6px 14px', cursor: 'pointer', fontSize: 12 }}
-                  onMouseEnter={e => e.target.style.borderColor = '#58a6ff'}
-                  onMouseLeave={e => e.target.style.borderColor = '#30363d'}
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)', color: '#8b949e', borderRadius: 20, padding: '6px 14px', cursor: 'pointer', fontSize: 12 }}
+                  onMouseEnter={e => e.target.style.borderColor = 'var(--accent-blue)'}
+                  onMouseLeave={e => e.target.style.borderColor = 'var(--border-glass)'}
                 >
                   {s}
                 </button>
@@ -207,11 +202,11 @@ export default function AIChatPage() {
               }}>
                 {m.role === 'user' ? '👤' : '🧠'}
               </div>
-              <div style={{
-                background: m.role === 'user' ? '#1c2d3a' : '#161b22',
-                border: `1px solid ${m.role === 'user' ? '#1f6feb' : '#30363d'}`,
-                borderRadius: 10, padding: '12px 16px', maxWidth: '80%',
-                fontSize: 14, lineHeight: 1.7, color: '#e6edf3',
+              <div className="glass-panel" style={{
+                background: m.role === 'user' ? 'rgba(59,130,246,0.1)' : 'rgba(15,23,42,0.6)',
+                border: `1px solid ${m.role === 'user' ? 'rgba(59,130,246,0.3)' : 'var(--border-glass)'}`,
+                borderRadius: 12, padding: '14px 18px', maxWidth: '85%',
+                fontSize: '0.95rem', lineHeight: 1.7, color: '#f8fafc',
                 whiteSpace: 'pre-wrap', wordBreak: 'break-word',
               }}>
                 {m.content}
@@ -280,7 +275,7 @@ export default function AIChatPage() {
       </div>
 
       {/* Input */}
-      <div style={{ borderTop: '1px solid #30363d', padding: '16px 24px', background: '#161b22', flexShrink: 0 }}>
+      <div style={{ borderTop: '1px solid var(--border-glass)', padding: '16px 24px', background: 'rgba(6,9,19,0.8)', flexShrink: 0 }}>
         <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', gap: 8 }}>
           <input
             value={input}
@@ -288,7 +283,8 @@ export default function AIChatPage() {
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
             placeholder="Ask anything about your codebase or project..."
             disabled={loading}
-            style={{ flex: 1, background: '#0d1117', border: '1px solid #30363d', borderRadius: 8, color: '#e6edf3', padding: '10px 14px', fontSize: 14, outline: 'none' }}
+            className="form-control"
+            style={{ flex: 1, padding: '10px 14px', fontSize: 14 }}
           />
           <button onClick={() => send()} disabled={loading || !input.trim()}
             style={{

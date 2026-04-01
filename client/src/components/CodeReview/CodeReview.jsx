@@ -198,17 +198,6 @@ function CodeReview({ taskId, socket, projectId, projectTasks = [] }) {
             </button>
           )}
           <button
-            className="btn btn-dark btn-sm fw-semibold"
-            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-            onClick={() => {
-              const token = localStorage.getItem('accessToken');
-              alert(`Run this command in your project terminal to auto-sync local saves to this Code Review:\n\nnode server/devcollab-sync.js ${projectId} ${token}\n\n(Make sure to run 'npm install' inside the server folder if you haven't recently!)`);
-            }}
-          >
-            <svg height="14" viewBox="0 0 16 16" fill="#58a6ff"><path d="M11.28 1.28a.75.75 0 011.06 0l2.5 2.5a.75.75 0 010 1.06l-9 9a.75.75 0 01-.26.17l-3.5 1a.75.75 0 01-.94-.94l1-3.5a.75.75 0 01.17-.26l9-9z"/></svg>
-            Connect VS Code
-          </button>
-          <button
             className="btn btn-primary btn-sm"
             onClick={() => setShowAddSnippet(true)}
           >
@@ -256,34 +245,10 @@ function CodeReview({ taskId, socket, projectId, projectTasks = [] }) {
           {/* Code Panel */}
           <div className="col-md-7">
             <div className="card border-0 shadow-sm">
-              {(() => {
-                const firstLines = activeSnippet.code_content.split('\n').slice(0, 3);
-                let syncedFile = null;
-                for (let line of firstLines) {
-                  if (line.includes('SYNCED_FILE: ')) {
-                    syncedFile = line.split('SYNCED_FILE: ')[1].trim();
-                    break;
-                  }
-                }
-                return (
-                  <div className="card-header bg-dark text-white d-flex justify-content-between py-2 align-items-center">
-                    <div>
-                      <small className="fw-semibold me-3 text-uppercase">{activeSnippet.language}</small>
-                    </div>
-                    <div className="d-flex align-items-center gap-3">
-                      {syncedFile && (
-                        <a href={`vscode://file/${syncedFile.replace(/\\/g, '/')}`} className="btn btn-primary btn-sm py-0 border-0" style={{ fontSize: '11px', background: '#0066b8' }}>
-                          <svg height="12" viewBox="0 0 16 16" fill="currentColor" className="me-1" style={{ verticalAlign: 'text-bottom' }}>
-                            <path d="M11.28 1.28a.75.75 0 011.06 0l2.5 2.5a.75.75 0 010 1.06l-9 9a.75.75 0 01-.26.17l-3.5 1a.75.75 0 01-.94-.94l1-3.5a.75.75 0 01.17-.26l9-9z"/>
-                          </svg>
-                          Open in VS Code
-                        </a>
-                      )}
-                      <small className="text-muted">by {activeSnippet.created_by_name || 'System Auto-Sync'}</small>
-                    </div>
-                  </div>
-                );
-              })()}
+              <div className="card-header bg-dark text-white d-flex justify-content-between py-2">
+                <small className="fw-semibold">{activeSnippet.language}</small>
+                <small className="text-muted">by {activeSnippet.created_by_name}</small>
+              </div>
               <div style={{ position: 'relative', overflowX: 'auto' }}>
                 {activeSnippet.code_content.split('\n').map((line, idx) => {
                   const lineNum = idx + 1;

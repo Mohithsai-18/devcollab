@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   PieChart, Pie, Cell, BarChart, Bar,
   XAxis, YAxis, Tooltip, Legend,
   LineChart, Line, CartesianGrid, ResponsiveContainer
 } from 'recharts';
-import { useTheme } from '../context/ThemeContext';
 import api from '../utils/api';
 
 const STATUS_COLORS = {
@@ -30,17 +29,12 @@ const PRIORITY_LABELS = {
 function Analytics() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
   const [data, setData] = useState(null);
   const [velocity, setVelocity] = useState([]);
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, [id]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [analyticsRes, velocityRes, projectRes] = await Promise.all([
         api.get(`/analytics/project/${id}`),
@@ -55,7 +49,11 @@ function Analytics() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (loading) return (
     <div className="d-flex justify-content-center mt-5">
@@ -88,19 +86,20 @@ function Analytics() {
     : 0;
 
   return (
-    <div className="min-vh-100 bg-body">
+    <div className="dark-page-bg">
 
       {/* Navbar */}
-      <nav className="navbar navbar-dark bg-primary px-4">
+          <nav className="d-flex justify-content-between align-items-center px-4" style={{ height: '72px', borderBottom: '1px solid var(--border-glass)', background: 'rgba(6,9,19,0.8)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div className="d-flex align-items-center gap-3">
 
           <button
-            className="btn btn-outline-light btn-sm"
+            className="btn-premium-outline py-1 px-3 mt-0"
+            style={{ fontSize: '0.85rem' }}
             onClick={() => navigate(`/project/${id}`)}
           >
             ← Back
           </button>
-          <span className="navbar-brand fw-bold mb-0">
+          <span className="fw-bold text-white fs-5">
             Analytics — {project?.name}
           </span>
         </div>
@@ -111,7 +110,7 @@ function Analytics() {
         {/* Summary Cards */}
         <div className="row mb-4">
           <div className="col-md-3">
-            <div className="card text-center p-3 border-0 shadow-sm">
+            <div className="glass-panel text-center p-3">
               <h2 className="text-primary fw-bold">
                 {taskStatusData.reduce((s, t) => s + t.value, 0)}
               </h2>
@@ -119,7 +118,7 @@ function Analytics() {
             </div>
           </div>
           <div className="col-md-3">
-            <div className="card text-center p-3 border-0 shadow-sm">
+            <div className="glass-panel text-center p-3">
               <h2 className="text-success fw-bold">
                 {taskStatusData.find(t => t.name === 'done')?.value || 0}
               </h2>
@@ -127,13 +126,13 @@ function Analytics() {
             </div>
           </div>
           <div className="col-md-3">
-            <div className="card text-center p-3 border-0 shadow-sm">
+            <div className="glass-panel text-center p-3">
               <h2 className="text-warning fw-bold">{points?.total_points || 0}</h2>
               <p className="mb-0 text-muted">Total Points</p>
             </div>
           </div>
           <div className="col-md-3">
-            <div className="card text-center p-3 border-0 shadow-sm">
+            <div className="glass-panel text-center p-3">
               <h2 className="text-info fw-bold">{completionPct}%</h2>
               <p className="mb-0 text-muted">Completion</p>
             </div>
