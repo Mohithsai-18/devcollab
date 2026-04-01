@@ -83,7 +83,9 @@ source server/models/schema.sql
 
 ## 👥 Team
 
-Built as a B.Tech final year project.
+- **KONA RITHIK SAI KUMAR**
+- **NADIPI MOHITH**
+- **DANNANA JAYANTH**
 
 ## 📄 License
 
