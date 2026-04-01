@@ -46,7 +46,7 @@ function Dashboard() {
   const projectIdsRef = React.useRef([]);
 
   useEffect(() => {
-    projectIdsRef.current = projects.map(p => p.id);
+    projectIdsRef.current = (Array.isArray(projects) ? projects : []).map(p => p.id);
   }, [projects]);
 
   useEffect(() => {
@@ -94,7 +94,9 @@ function Dashboard() {
     navigate('/login');
   };
 
-  const totalTasks = projects.reduce((sum, p) => sum + (p.task_count || 0), 0);
+  // Safe checks for projects array
+  const projectsList = Array.isArray(projects) ? projects : [];
+  const totalTasks = projectsList.reduce((sum, p) => sum + (Number(p.task_count) || 0), 0);
 
   return (
     <div className="dark-page-bg" style={{ paddingBottom: '40px' }}>
@@ -131,10 +133,10 @@ function Dashboard() {
         {/* Stats Row */}
         <div className="row mb-5 g-4 animate-in">
           {[
-            { label: 'Projects', val: projects.length, color: '#60a5fa', icon: '📁', accent: 'neon-border-blue' },
+            { label: 'Projects', val: projectsList.length, color: '#60a5fa', icon: '📁', accent: 'neon-border-blue' },
             { label: 'Total Tasks', val: totalTasks, color: '#34d399', icon: '📝', accent: 'neon-border-cyan' },
-            { label: 'Active', val: projects.filter(p => p.status === 'active').length, color: '#fbbf24', icon: '🔥', accent: 'neon-border-purple' },
-            { label: 'Archived', val: projects.filter(p => p.status === 'archived').length, color: '#94a3b8', icon: '📦', accent: '' },
+            { label: 'Active', val: projectsList.filter(p => p.status === 'active').length, color: '#fbbf24', icon: '🔥', accent: 'neon-border-purple' },
+            { label: 'Archived', val: projectsList.filter(p => p.status === 'archived').length, color: '#94a3b8', icon: '📦', accent: '' },
           ].map((stat, i) => (
             <div className={`col-md-3 stagger-${i+1}`} key={i}>
               <div className={`glass-panel p-4 d-flex align-items-center justify-content-between h-100 ${stat.accent}`}>
@@ -159,7 +161,7 @@ function Dashboard() {
         {/* Projects Grid */}
         {loading ? (
           <div className="text-center mt-5"><div className="spinner-border text-primary" /></div>
-        ) : projects.length === 0 ? (
+        ) : projectsList.length === 0 ? (
           <div className="text-center py-5 glass-panel">
             <h5 className="text-white mb-2">No projects yet</h5>
             <p style={{ color: 'var(--text-muted)' }}>Create a new project to get started</p>
@@ -167,7 +169,7 @@ function Dashboard() {
           </div>
         ) : (
           <div className="row g-4">
-            {projects.map(project => (
+            {projectsList.map(project => (
               <div className="col-md-4" key={project.id}>
                 <div className="glass-panel h-100 p-4 d-flex flex-column text-start" style={{ cursor: 'pointer' }} onClick={() => navigate(`/project/${project.id}`)}>
                   <div className="d-flex justify-content-between align-items-start mb-3">
