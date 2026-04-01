@@ -83,25 +83,14 @@ source server/models/schema.sql
 
 ## 👥 Team
 
-- **KONA RITHIK SAI KUMAR**
-- **NADIPI MOHITH**
-- **DANNANA JAYANTH**
+This project was built as a **B.Tech Final Year Project** by:
+
+| Name                      | Role                  |
+|---------------------------|-----------------------|
+| **NADIPI MOHITH**         | Full Stack Developer  |
+| **KONA RITHIK SAI KUMAR** | Full Stack Developer  |
+| **DANNANA JAYANTH**       | Full Stack Developer  |
 
 ## 📄 License
 
-MIT
-```
-
-Save **Ctrl + S**
-
----
-
-Now final push:
-```
-git add .
-```
-```
-git commit -m "docs: complete README with setup instructions and API docs"
-```
-```
-git push origin master
+This project is licensed under the [MIT License](../LICENSE).
