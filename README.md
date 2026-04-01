@@ -126,7 +126,7 @@ This project was built as a **B.Tech Final Year Project** by:
 
 | Name                    | Role                  |
 |-------------------------|-----------------------|
-| **NADIPI MOHITH**       | Full Stack Developer  |
+| **NADIPI MOHITH SAI**       | Full Stack Developer  |
 | **KONA RITHIK SAI KUMAR** | Full Stack Developer |
 | **DANNANA JAYANTH**     | Full Stack Developer  |
 
