@@ -30,7 +30,10 @@ const connectRepo = async (req, res) => {
     );
 
     res.json({ message: 'Repository connected successfully' });
-  } catch (error) { console.error(error); res.status(500).json({ message: 'Server error' }); }
+  } catch (error) { 
+    console.error('--- GITHUB CONNECT ERROR ---', error); 
+    res.status(500).json({ message: error.message || 'Server error' }); 
+  }
 };
 
 // ── GET ACTIVE REPO INFO ──────────────────────────────────────────────────────
