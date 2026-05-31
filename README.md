@@ -18,6 +18,19 @@
 
 ---
 
+## 📷 Screenshots
+
+### Landing Page
+![Landing Page](screenshots/landing.png)
+
+### Login Page
+![Login Page](screenshots/login.png)
+
+### Register Page
+![Register Page](screenshots/register.png)
+
+---
+
 ## 🛠️ Tech Stack
 
 | Layer      | Technology                       |
